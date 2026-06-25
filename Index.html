@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DispatchDock v1.0 — CEDIS Walmart</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,400&display=swap');
+
+:root {
+  --blue-50:#EFF6FF;--blue-100:#DBEAFE;--blue-200:#BFDBFE;--blue-400:#60A5FA;
+  --blue-500:#3B82F6;--blue-600:#2563EB;--blue-700:#1D4ED8;--blue-900:#1E3A5F;
+  --yellow-400:#FBBF24;--yellow-500:#F59E0B;
+  --green-50:#F0FDF4;--green-100:#DCFCE7;--green-200:#BBF7D0;
+  --green-400:#4ADE80;--green-500:#22C55E;--green-600:#16A34A;--green-700:#15803D;
+  --purple-50:#FAF5FF;--purple-100:#F3E8FF;--purple-400:#C084FC;
+  --purple-500:#A855F7;--purple-600:#9333EA;--purple-700:#7E22CE;
+  --amber-50:#FFFBEB;--amber-100:#FEF3C7;--amber-200:#FDE68A;
+  --amber-400:#FBBF24;--amber-500:#F59E0B;--amber-600:#D97706;--amber-700:#B45309;
+  --red-50:#FEF2F2;--red-100:#FEE2E2;--red-400:#F87171;--red-500:#EF4444;--red-600:#DC2626;
+  --gray-50:#F8FAFC;--gray-100:#F1F5F9;--gray-200:#E2E8F0;--gray-300:#CBD5E1;
+  --gray-400:#94A3B8;--gray-500:#64748B;--gray-600:#475569;--gray-700:#334155;
+  --gray-800:#1E293B;--gray-900:#0F172A;
+  --surface-0:#FFFFFF;--surface-1:#F8FAFC;--surface-2:#F1F5F9;
+  --color-text:var(--gray-800);--color-text-2:var(--gray-600);--color-text-3:var(--gray-400);
+  --color-border:var(--gray-200);--color-border-2:var(--gray-300);
+  --shadow-xs:0 1px 2px rgba(15,23,42,0.05);
+  --shadow-sm:0 1px 3px rgba(15,23,42,0.08),0 1px 2px -1px rgba(15,23,42,0.06);
+  --shadow-md:0 4px 6px -1px rgba(15,23,42,0.08),0 2px 4px -2px rgba(15,23,42,0.06);
+  --shadow-lg:0 10px 15px -3px rgba(15,23,42,0.08),0 4px 6px -4px rgba(15,23,42,0.05);
+  --shadow-xl:0 20px 25px -5px rgba(15,23,42,0.10),0 8px 10px -6px rgba(15,23,42,0.06);
+  --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:18px;--r-full:9999px;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --t-fast:100ms ease;--t-base:180ms ease;--t-slow:280ms cubic-bezier(0.4,0,0.2,1);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:14px;-webkit-font-smoothing:antialiased;}
+body{font-family:var(--font);background:var(--surface-1);color:var(--color-text);min-height:100vh;line-height:1.5;}
+
+/* ── APP SHELL ─────────────────────────── */
+.app{display:grid;grid-template-rows:56px 1fr;grid-template-columns:260px 1fr;grid-template-areas:"topbar topbar""sidebar main";min-height:100vh;}
+
+/* ── TOPBAR ────────────────────────────── */
+.topbar{grid-area:topbar;background:var(--gray-900);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;padding:0 20px 0 0;position:sticky;top:0;z-index:200;}
+.topbar-logo{width:260px;flex-shrink:0;display:flex;align-items:center;gap:11px;padding:0 18px;height:100%;border-right:1px solid rgba(255,255,255,0.06);}
+.logo-icon{width:32px;height:32px;background:var(--yellow-400);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-icon svg{width:20px;height:20px;}
+.logo-text{display:flex;flex-direction:column;}
+.logo-name{font-size:14px;font-weight:700;color:#fff;letter-spacing:-0.2px;line-height:1.2;}
+.logo-sub{font-size:9.5px;font-weight:500;color:rgba(255,255,255,0.35);letter-spacing:1.4px;text-transform:uppercase;}
+.topbar-center{flex:1;display:flex;align-items:center;padding:0 20px;}
+.progress-steps{display:flex;align-items:center;}
+.ps-item{display:flex;align-items:center;gap:8px;position:relative;}
+.ps-item+.ps-item::before{content:'';width:28px;height:1px;background:rgba(255,255,255,0.12);margin:0 4px;transition:background var(--t-slow);}
+.ps-item.done+.ps-item::before{background:var(--green-500);}
+.ps-dot{width:22px;height:22px;border-radius:var(--r-full);background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,0.35);transition:all var(--t-slow);flex-shrink:0;}
+.ps-item.active .ps-dot{background:var(--blue-600);border-color:var(--blue-400);color:#fff;box-shadow:0 0 0 3px rgba(59,130,246,0.25);}
+.ps-item.done .ps-dot{background:var(--green-600);border-color:var(--green-500);color:#fff;}
+.ps-item.done .ps-dot::after{content:'✓';}
+.ps-item.done .ps-dot>span{display:none;}
+.ps-label{font-size:11px;font-weight:500;color:rgba(255,255,255,0.3);transition:color var(--t-base);white-space:nowrap;}
+.ps-item.active .ps-label{color:rgba(255,255,255,0.85);font-weight:600;}
+.ps-item.done .ps-label{color:var(--green-400);}
+.topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.badge{font-size:9px;font-weight:700;letter-spacing:1.2px;padding:3px 8px;border-radius:var(--r-full);text-transform:uppercase;}
+.badge-cp{background:rgba(59,130,246,0.2);color:#93C5FD;border:1px solid rgba(59,130,246,0.3);}
+.badge-fito{background:rgba(34,197,94,0.2);color:#86EFAC;border:1px solid rgba(34,197,94,0.3);}
+.badge-uni{background:rgba(168,85,247,0.2);color:#D8B4FE;border:1px solid rgba(168,85,247,0.3);}
+.badge-ver{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.1);}
+
+/* ── SIDEBAR ───────────────────────────── */
+.sidebar{grid-area:sidebar;background:var(--surface-0);border-right:1px solid var(--color-border);position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;display:flex;flex-direction:column;padding:20px 0 24px;}
+.sidebar-section{padding:0 14px;margin-bottom:4px;}
+.sidebar-label{font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--color-text-3);padding:0 8px;margin-bottom:6px;margin-top:16px;display:block;}
+.sidebar-label:first-child{margin-top:0;}
+.pdf-status{margin:0 14px 16px;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--color-border);background:var(--surface-1);}
+.pdf-status-empty{padding:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:background var(--t-fast);min-height:80px;text-align:center;}
+.pdf-status-empty:hover{background:var(--blue-50);}
+.pdf-status-empty .upload-icon{width:32px;height:32px;border-radius:var(--r-sm);background:var(--blue-100);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.pdf-status-empty p{font-size:11px;font-weight:600;color:var(--blue-600);}
+.pdf-status-empty span{font-size:10px;color:var(--color-text-3);}
+.pdf-status-loaded{display:none;padding:12px 14px;gap:10px;}
+.pdf-loaded-icon{width:30px;height:30px;border-radius:var(--r-sm);background:var(--red-50);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.pdf-loaded-info{flex:1;min-width:0;}
+.pdf-loaded-name{font-size:11px;font-weight:600;color:var(--color-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pdf-loaded-meta{font-size:10px;color:var(--color-text-2);margin-top:1px;}
+.pdf-loaded-change{font-size:10px;font-weight:600;color:var(--blue-600);cursor:pointer;white-space:nowrap;background:none;border:none;padding:0;font-family:var(--font);}
+.pdf-loaded-change:hover{text-decoration:underline;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 14px;margin-bottom:12px;}
+.stat-chip{background:var(--surface-1);border:1px solid var(--color-border);border-radius:var(--r-sm);padding:8px 10px;display:flex;flex-direction:column;gap:2px;transition:all var(--t-fast);}
+.stat-chip-value{font-size:18px;font-weight:800;letter-spacing:-0.5px;line-height:1;color:var(--gray-300);transition:color var(--t-base);}
+.stat-chip-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-3);}
+.stat-chip.has-value{border-color:transparent;box-shadow:var(--shadow-sm);}
+.stat-chip.cp-chip.has-value{background:var(--blue-50);border-color:var(--blue-100);}
+.stat-chip.fito-chip.has-value{background:var(--green-50);border-color:var(--green-100);}
+.stat-chip.uni-chip.has-value{background:var(--purple-50);border-color:var(--purple-100);}
+.stat-chip.total-chip.has-value{background:var(--amber-50);border-color:var(--amber-200);}
+.stat-chip.cp-chip.has-value .stat-chip-value{color:var(--blue-600);}
+.stat-chip.fito-chip.has-value .stat-chip-value{color:var(--green-600);}
+.stat-chip.uni-chip.has-value .stat-chip-value{color:var(--purple-600);}
+.stat-chip.total-chip.has-value .stat-chip-value{color:var(--amber-600);}
+.page-match{margin:0 14px 12px;border-radius:var(--r-sm);padding:8px 10px;font-size:10px;font-weight:500;display:none;}
+.page-match.ok{background:var(--green-50);color:var(--green-700);border:1px solid var(--green-200);display:flex;align-items:center;gap:5px;}
+.page-match.warn{background:var(--amber-50);color:var(--amber-600);border:1px solid var(--amber-200);display:block;}
+.page-match.error-s{background:var(--red-50);color:var(--red-600);border:1px solid var(--red-100);display:block;}
+.page-match strong{font-weight:700;}
+.sidebar-cta{margin:0 14px;margin-top:auto;display:flex;flex-direction:column;gap:8px;}
+.btn-primary{display:flex;align-items:center;justify-content:center;gap:7px;background:var(--blue-600);color:#fff;border:none;border-radius:var(--r-md);padding:11px 16px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;transition:background var(--t-fast),transform var(--t-fast),box-shadow var(--t-fast),opacity var(--t-fast);width:100%;box-shadow:0 1px 3px rgba(37,99,235,0.35),0 0 0 1px rgba(37,99,235,0.15);position:relative;overflow:hidden;}
+.btn-primary::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,255,255,0.08),transparent);pointer-events:none;}
+.btn-primary:hover:not(:disabled){background:var(--blue-700);transform:translateY(-1px);box-shadow:0 4px 10px rgba(37,99,235,0.40),0 0 0 1px rgba(37,99,235,0.2);}
+.btn-primary:active:not(:disabled){transform:translateY(0);}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-yellow{display:flex;align-items:center;justify-content:center;gap:7px;background:var(--yellow-400);color:var(--gray-900);border:none;border-radius:var(--r-md);padding:11px 16px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all var(--t-fast);width:100%;box-shadow:0 1px 3px rgba(245,158,11,0.30);}
+.btn-yellow:hover:not(:disabled){background:var(--yellow-500);transform:translateY(-1px);}
+.btn-yellow:disabled{opacity:0.4;cursor:not-allowed;}
+.split-progress{display:none;}
+.split-progress.show{display:block;}
+.sp-label{font-size:11px;font-weight:600;color:var(--color-text-2);margin-bottom:6px;display:flex;justify-content:space-between;}
+.sp-track{height:4px;background:var(--color-border);border-radius:var(--r-full);overflow:hidden;}
+.sp-fill{height:100%;border-radius:var(--r-full);background:linear-gradient(90deg,var(--blue-500),var(--blue-400));transition:width 200ms ease;width:0%;}
+
+/* ── MAIN ──────────────────────────────── */
+.main{grid-area:main;padding:24px 28px 60px;max-width:820px;overflow-y:auto;}
+
+/* ── PANELS ────────────────────────────── */
+.panel{background:var(--surface-0);border:1px solid var(--color-border);border-radius:var(--r-xl);margin-bottom:16px;overflow:hidden;transition:box-shadow var(--t-base),opacity var(--t-slow);box-shadow:var(--shadow-xs);}
+.panel.locked{opacity:0.5;pointer-events:none;}
+.panel:focus-within{box-shadow:var(--shadow-md);}
+.panel-header{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--color-border);background:var(--surface-0);}
+.panel-step-badge{width:28px;height:28px;border-radius:var(--r-full);background:var(--blue-600);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;}
+.panel.done-panel .panel-step-badge{background:var(--green-600);}
+.panel.done-panel .panel-step-badge::after{content:'✓';}
+.panel.done-panel .panel-step-badge>span{display:none;}
+.panel-title-block{flex:1;}
+.panel-title{font-size:14px;font-weight:700;color:var(--color-text);line-height:1.2;}
+.panel-desc{font-size:11px;color:var(--color-text-3);margin-top:2px;}
+.panel-body{padding:20px;}
+.panel-body+.panel-body{border-top:1px solid var(--color-border);}
+.panel-toggle{width:24px;height:24px;border-radius:var(--r-full);background:none;border:1px solid var(--color-border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text-3);font-size:10px;transition:all var(--t-fast);margin-left:auto;flex-shrink:0;font-family:var(--font);}
+.panel-toggle:hover{background:var(--surface-1);color:var(--color-text);}
+.panel-body-wrap{overflow:hidden;transition:max-height var(--t-slow);max-height:4000px;}
+.panel-body-wrap.collapsed{max-height:0;}
+
+/* ── DROP ZONE ─────────────────────────── */
+.drop-zone{border:2px dashed var(--color-border);border-radius:var(--r-lg);padding:36px 24px;text-align:center;cursor:pointer;transition:all var(--t-base);background:var(--surface-1);}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--blue-400);background:var(--blue-50);}
+.dz-content{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.dz-upload-ring{width:52px;height:52px;border-radius:var(--r-full);background:var(--gray-100);border:2px solid var(--gray-200);display:flex;align-items:center;justify-content:center;transition:all var(--t-base);font-size:20px;}
+.drop-zone:hover .dz-upload-ring,.drop-zone.drag-over .dz-upload-ring{background:var(--blue-100);border-color:var(--blue-300);}
+.dz-title{font-size:13px;font-weight:600;color:var(--color-text);}
+.dz-sub{font-size:11px;color:var(--color-text-3);}
+.dz-btn{display:inline-flex;align-items:center;gap:5px;background:var(--surface-0);border:1px solid var(--color-border-2);border-radius:var(--r-sm);padding:6px 14px;font-size:11px;font-weight:600;color:var(--blue-600);cursor:pointer;transition:all var(--t-fast);margin-top:4px;font-family:var(--font);}
+.dz-btn:hover{background:var(--blue-50);border-color:var(--blue-300);}
+.dz-loaded{display:none;align-items:center;gap:12px;background:var(--green-50);border:1.5px solid var(--green-200);border-radius:var(--r-md);padding:12px 14px;margin-top:12px;}
+.dz-loaded.show{display:flex;}
+.dz-loaded-icon{font-size:20px;}
+.dz-loaded-info{flex:1;}
+.dz-loaded-name{font-size:12px;font-weight:700;color:var(--green-700);}
+.dz-loaded-pages{font-size:10px;color:var(--green-600);margin-top:1px;}
+
+/* ── CORRECTION MODULE ─────────────────── */
+.orient-banner{border-radius:var(--r-md);padding:12px 14px;margin-bottom:16px;display:none;}
+.orient-banner.scanning{background:var(--blue-50);border:1px solid var(--blue-100);display:block;}
+.orient-banner.ok{background:var(--green-50);border:1px solid var(--green-200);display:flex;align-items:center;gap:10px;}
+.orient-banner.warn{background:var(--amber-50);border:1px solid var(--amber-200);display:block;}
+.orient-banner-title{font-size:12px;font-weight:700;margin-bottom:2px;}
+.orient-banner.scanning .orient-banner-title{color:var(--blue-700);}
+.orient-banner.ok .orient-banner-title{color:var(--green-700);}
+.orient-banner.warn .orient-banner-title{color:var(--amber-700);}
+.orient-banner-sub{font-size:11px;color:var(--color-text-2);line-height:1.5;}
+.orient-banner.ok .orient-banner-sub{color:var(--green-600);}
+.orient-progress{height:3px;background:var(--blue-100);border-radius:var(--r-full);overflow:hidden;margin-top:10px;}
+.orient-progress-fill{height:100%;background:var(--blue-500);border-radius:var(--r-full);transition:width 150ms ease;width:0%;}
+.orient-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.btn-sm{display:inline-flex;align-items:center;gap:5px;border-radius:var(--r-sm);padding:6px 12px;font-size:11px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all var(--t-fast);border:1px solid transparent;white-space:nowrap;}
+.btn-sm-amber{background:var(--amber-500);color:#fff;border-color:var(--amber-600);}
+.btn-sm-amber:hover{background:var(--amber-600);}
+.btn-sm-outline{background:var(--surface-0);color:var(--color-text-2);border-color:var(--color-border-2);}
+.btn-sm-outline:hover{background:var(--surface-1);color:var(--color-text);}
+.btn-sm-ghost{background:none;color:var(--color-text-3);border-color:transparent;}
+.btn-sm-ghost:hover{color:var(--color-text-2);}
+
+.rot-controls{display:flex;flex-direction:column;gap:14px;}
+.rot-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.rot-label{font-size:11px;font-weight:600;color:var(--color-text-2);min-width:130px;}
+.rot-btns{display:flex;gap:6px;}
+.rot-btn{width:34px;height:34px;border-radius:var(--r-sm);background:var(--surface-1);border:1px solid var(--color-border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all var(--t-fast);color:var(--color-text-2);}
+.rot-btn:hover{background:var(--blue-50);border-color:var(--blue-300);color:var(--blue-600);}
+.rot-btn.active{background:var(--blue-600);border-color:var(--blue-600);color:#fff;box-shadow:0 2px 6px rgba(37,99,235,0.35);}
+.rot-btn-reset{font-size:10px;font-weight:700;width:auto;padding:0 10px;}
+
+.page-select{appearance:none;background:var(--surface-0);border:1px solid var(--color-border);border-radius:var(--r-sm);padding:6px 28px 6px 10px;font-size:12px;font-family:var(--font);color:var(--color-text);cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394A3B8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;min-width:120px;}
+.page-select:focus{outline:none;border-color:var(--blue-400);box-shadow:0 0 0 3px rgba(59,130,246,0.12);}
+
+/* Thumbnail strip */
+.thumb-strip-wrap{margin-top:16px;}
+.thumb-strip-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-3);margin-bottom:8px;}
+.thumb-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin;}
+.thumb-strip::-webkit-scrollbar{height:4px;}
+.thumb-strip::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:2px;}
+.thumb-item{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;position:relative;}
+.thumb-canvas-wrap{width:72px;height:96px;border-radius:var(--r-sm);overflow:hidden;border:2px solid var(--color-border);background:var(--surface-2);display:flex;align-items:center;justify-content:center;transition:all var(--t-fast);position:relative;}
+.thumb-item:hover .thumb-canvas-wrap{border-color:var(--blue-300);}
+.thumb-item.selected .thumb-canvas-wrap{border-color:var(--blue-500);box-shadow:0 0 0 2px rgba(59,130,246,0.25);}
+.thumb-item.has-warn .thumb-canvas-wrap{border-color:var(--amber-400);}
+.thumb-item.has-correction .thumb-canvas-wrap{border-color:var(--blue-400);}
+.thumb-canvas-wrap canvas{max-width:100%;max-height:100%;display:block;}
+.thumb-badge{position:absolute;top:3px;right:3px;background:var(--amber-500);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;line-height:1.4;}
+.thumb-badge.correction{background:var(--blue-600);}
+.thumb-num{font-size:9px;font-weight:600;color:var(--color-text-3);}
+.thumb-item.selected .thumb-num{color:var(--blue-600);}
+.thumb-item.has-warn .thumb-num{color:var(--amber-600);}
+.thumb-loading{display:flex;align-items:center;justify-content:center;width:72px;height:96px;background:var(--surface-2);border-radius:var(--r-sm);border:1px solid var(--color-border);}
+.thumb-spinner{width:16px;height:16px;border:2px solid var(--gray-200);border-top-color:var(--blue-400);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── FORM ELEMENTS ─────────────────────── */
+.input-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-2);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.input-label .label-tag{font-size:9px;font-weight:600;background:var(--blue-100);color:var(--blue-700);padding:1px 5px;border-radius:3px;letter-spacing:0.5px;}
+.input-label .label-warn{font-size:9px;font-weight:600;background:var(--amber-100);color:var(--amber-700);padding:1px 5px;border-radius:3px;letter-spacing:0.5px;}
+textarea.input-field{width:100%;background:var(--surface-1);border:1px solid var(--color-border);border-radius:var(--r-md);color:var(--color-text);font-family:var(--font);font-size:12px;padding:10px 12px;resize:vertical;line-height:1.7;transition:all var(--t-fast);}
+textarea.input-field:focus{outline:none;border-color:var(--blue-400);background:var(--surface-0);box-shadow:0 0 0 3px rgba(59,130,246,0.12);}
+textarea.input-field::placeholder{color:var(--color-text-3);}
+textarea.auto-filled{background:var(--surface-0);border-color:var(--green-200);box-shadow:0 0 0 2px rgba(34,197,94,0.08);}
+.input-hint{font-size:10px;color:var(--color-text-3);margin-top:6px;line-height:1.5;}
+.detect-btn{display:inline-flex;align-items:center;gap:7px;background:var(--blue-50);border:1px solid var(--blue-200);border-radius:var(--r-sm);padding:8px 16px;font-size:12px;font-weight:700;color:var(--blue-600);font-family:var(--font);cursor:pointer;transition:all var(--t-fast);margin-top:12px;}
+.detect-btn:hover:not(:disabled){background:var(--blue-100);border-color:var(--blue-300);}
+.detect-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.detect-result-bar{display:none;margin-top:12px;background:var(--green-50);border:1px solid var(--green-200);border-radius:var(--r-md);padding:10px 14px;}
+.detect-result-bar.show{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.drb-title{font-size:11px;font-weight:700;color:var(--green-700);}
+.drb-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.drb-chip{font-size:10px;font-weight:600;padding:3px 9px;border-radius:var(--r-full);}
+.drb-chip-green{background:var(--green-100);color:var(--green-700);border:1px solid var(--green-200);}
+.drb-chip-purple{background:var(--purple-100);color:var(--purple-700);border:1px solid var(--purple-100);}
+.drb-chip-warn{background:var(--amber-100);color:var(--amber-700);border:1px solid var(--amber-200);}
+.or-line{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--color-text-3);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.or-line::before,.or-line::after{content:'';flex:1;height:1px;background:var(--color-border);}
+.two-col-inputs{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.input-col-label-cp{color:var(--blue-600);}
+.input-col-label-fito{color:var(--green-600);}
+.textarea-route{height:120px;font-family:'Inter',monospace;}
+.callout{display:flex;gap:10px;background:var(--blue-50);border:1px solid var(--blue-100);border-radius:var(--r-md);padding:10px 12px;font-size:11px;color:var(--blue-900);line-height:1.6;margin-top:14px;}
+.callout-icon{flex-shrink:0;font-size:14px;}
+
+/* ── PREVIEW TABLE ─────────────────────── */
+.preview-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.preview-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-2);}
+.preview-count{font-size:10px;color:var(--color-text-3);}
+.table-scroll{border:1px solid var(--color-border);border-radius:var(--r-md);overflow:hidden;max-height:320px;overflow-y:auto;}
+table{width:100%;border-collapse:collapse;font-size:11.5px;}
+thead th{position:sticky;top:0;z-index:1;background:var(--gray-800);font-size:9.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.5);text-align:left;padding:9px 14px;}
+tbody tr{border-bottom:1px solid var(--color-border);transition:background var(--t-fast);}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--surface-1);}
+tbody td{padding:8px 14px;vertical-align:middle;}
+.td-num{width:36px;font-weight:600;color:var(--color-text-3);font-size:10px;text-align:center;}
+.td-page{width:80px;color:var(--color-text-3);font-size:10px;}
+.td-file{font-weight:600;}
+.td-file.cp{color:var(--blue-600);}
+.td-file.fito{color:var(--green-600);}
+.td-file.unified{color:var(--purple-600);}
+.row-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;letter-spacing:0.5px;padding:2px 7px;border-radius:var(--r-full);}
+.tag-cp{background:var(--blue-50);color:var(--blue-600);border:1px solid var(--blue-100);}
+.tag-fito{background:var(--green-50);color:var(--green-600);border:1px solid var(--green-100);}
+.tag-unified{background:var(--purple-50);color:var(--purple-600);border:1px solid var(--purple-100);}
+.tag-warn{background:var(--amber-50);color:var(--amber-600);border:1px solid var(--amber-200);}
+.alert-inline{display:none;margin-top:10px;border-radius:var(--r-md);padding:10px 14px;font-size:11px;line-height:1.6;}
+.alert-inline.warn{background:var(--amber-50);color:var(--amber-600);border:1px solid var(--amber-200);display:block;}
+.alert-inline.error-a{background:var(--red-50);color:var(--red-600);border:1px solid var(--red-100);display:block;}
+.preview-empty{text-align:center;padding:32px 20px;color:var(--color-text-3);display:flex;flex-direction:column;align-items:center;gap:8px;}
+.preview-empty .pe-icon{font-size:28px;opacity:0.4;}
+.preview-empty p{font-size:12px;}
+
+/* ── DOWNLOADS ─────────────────────────── */
+.download-panel{display:none;}
+.download-panel.show{display:block;}
+.dl-top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+.dl-summary-line{font-size:12px;color:var(--color-text-2);}
+.dl-summary-line strong{font-weight:700;color:var(--color-text);}
+.dl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;}
+.dl-item{background:var(--surface-0);border:1px solid var(--color-border);border-radius:var(--r-md);padding:10px 12px;display:flex;align-items:center;gap:10px;transition:box-shadow var(--t-fast),border-color var(--t-fast);animation:fadeSlideIn 250ms ease forwards;opacity:0;}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.dl-item:hover{box-shadow:var(--shadow-md);border-color:var(--color-border-2);}
+.dl-item.dl-cp{border-left:3px solid var(--blue-400);}
+.dl-item.dl-fito{border-left:3px solid var(--green-400);}
+.dl-item.dl-unified{border-left:3px solid var(--purple-400);}
+.dl-file-icon{font-size:18px;flex-shrink:0;}
+.dl-info{flex:1;min-width:0;}
+.dl-name{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dl-name.cp{color:var(--blue-600);}
+.dl-name.fito{color:var(--green-600);}
+.dl-name.unified{color:var(--purple-600);}
+.dl-meta{font-size:9.5px;color:var(--color-text-3);margin-top:1px;}
+.dl-btn-link{background:none;border:1px solid var(--color-border);border-radius:var(--r-sm);padding:5px 10px;font-size:10.5px;font-weight:600;color:var(--blue-600);cursor:pointer;white-space:nowrap;text-decoration:none;transition:all var(--t-fast);font-family:var(--font);display:inline-block;}
+.dl-btn-link:hover{background:var(--blue-50);border-color:var(--blue-300);}
+
+/* ── SUCCESS BANNER ────────────────────── */
+.success-banner{display:none;background:var(--green-50);border:1px solid var(--green-200);border-radius:var(--r-xl);padding:20px;margin-bottom:16px;align-items:center;gap:14px;}
+.success-banner.show{display:flex;animation:fadeSlideIn 350ms ease forwards;}
+.success-banner-icon{width:44px;height:44px;border-radius:var(--r-full);background:var(--green-600);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.success-banner-text{flex:1;}
+.success-banner-title{font-size:14px;font-weight:700;color:var(--green-700);}
+.success-banner-sub{font-size:11px;color:var(--green-600);margin-top:2px;}
+
+/* ── TOAST ─────────────────────────────── */
+#toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999;}
+.toast{display:flex;align-items:flex-start;gap:10px;background:var(--gray-900);border:1px solid rgba(255,255,255,0.06);border-radius:var(--r-md);padding:12px 14px;min-width:260px;max-width:340px;box-shadow:var(--shadow-xl);animation:toastIn 220ms cubic-bezier(0.4,0,0.2,1) forwards;cursor:pointer;}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+@keyframes toastOut{to{opacity:0;transform:translateX(20px);height:0;padding:0;margin:0;}}
+.toast.hiding{animation:toastOut 200ms ease forwards;}
+.toast-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
+.toast-body{flex:1;}
+.toast-msg{font-size:12px;font-weight:600;color:#fff;line-height:1.4;}
+.toast-sub{font-size:10.5px;color:rgba(255,255,255,0.45);margin-top:1px;}
+.toast.success{border-left:3px solid var(--green-500);}
+.toast.error{border-left:3px solid var(--red-500);}
+.toast.warning{border-left:3px solid var(--yellow-400);}
+.toast.info{border-left:3px solid var(--blue-400);}
+
+/* ── SCROLLBAR ─────────────────────────── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--gray-300);}
+
+/* ── RESPONSIVE ────────────────────────── */
+@media(max-width:768px){
+  .app{grid-template-columns:1fr;grid-template-areas:"topbar""main";}
+  .sidebar{display:none;}
+  .topbar-logo{width:auto;border-right:none;}
+  .main{padding:16px 14px 80px;max-width:100%;}
+  .progress-steps{display:none;}
+  .two-col-inputs{grid-template-columns:1fr;}
+  .mobile-fab{display:flex !important;}
+}
+.mobile-fab{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:100;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ════ TOPBAR ════ -->
+<header class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 44 44" fill="none">
+        <rect x="4" y="30" width="36" height="5" rx="2" fill="#0F172A"/>
+        <rect x="8" y="26" width="4" height="6" rx="1" fill="#0F172A"/>
+        <rect x="20" y="26" width="4" height="6" rx="1" fill="#0F172A"/>
+        <rect x="32" y="26" width="4" height="6" rx="1" fill="#0F172A"/>
+        <rect x="16" y="8" width="18" height="22" rx="2.5" fill="#1D4ED8"/>
+        <rect x="13" y="6" width="18" height="22" rx="2.5" fill="#2563EB"/>
+        <rect x="10" y="4" width="18" height="22" rx="2.5" fill="#FBBF24"/>
+        <rect x="13.5" y="9" width="11" height="1.8" rx="0.9" fill="#0F172A" opacity="0.3"/>
+        <rect x="13.5" y="13" width="8" height="1.8" rx="0.9" fill="#0F172A" opacity="0.3"/>
+        <rect x="13.5" y="17" width="10" height="1.8" rx="0.9" fill="#0F172A" opacity="0.3"/>
+        <path d="M19 27L22 31L25 27" stroke="#0F172A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <div class="logo-name">DispatchDock</div>
+      <div class="logo-sub">CEDIS Walmart</div>
+    </div>
+  </div>
+  <div class="topbar-center">
+    <nav class="progress-steps">
+      <div class="ps-item active" id="ps1"><div class="ps-dot"><span>1</span></div><div class="ps-label">Cargar PDF</div></div>
+      <div class="ps-item" id="ps2"><div class="ps-dot"><span>2</span></div><div class="ps-label">Corrección</div></div>
+      <div class="ps-item" id="ps3"><div class="ps-dot"><span>3</span></div><div class="ps-label">Configurar rutas</div></div>
+      <div class="ps-item" id="ps4"><div class="ps-dot"><span>4</span></div><div class="ps-label">Revisar</div></div>
+      <div class="ps-item" id="ps5"><div class="ps-dot"><span>5</span></div><div class="ps-label">Descargar</div></div>
+    </nav>
+  </div>
+  <div class="topbar-right">
+    <span class="badge badge-cp">CP</span>
+    <span class="badge badge-fito">FITO</span>
+    <span class="badge badge-uni">UNIF</span>
+    <span class="badge badge-ver">v1.0</span>
+  </div>
+</header>
+
+<!-- ════ SIDEBAR ════ -->
+<aside class="sidebar">
+  <span class="sidebar-label">Archivo cargado</span>
+  <div class="pdf-status">
+    <div class="pdf-status-empty" id="sb-pdf-empty" onclick="document.getElementById('file-input').click()">
+      <div class="upload-icon">📂</div>
+      <p>Cargar PDF</p>
+      <span>Haz clic para seleccionar</span>
+    </div>
+    <div class="pdf-status-loaded" id="sb-pdf-loaded" style="display:none">
+      <div class="pdf-loaded-icon">📄</div>
+      <div class="pdf-loaded-info">
+        <div class="pdf-loaded-name" id="sb-pdf-name">—</div>
+        <div class="pdf-loaded-meta" id="sb-pdf-meta">No hay PDF cargado</div>
+      </div>
+      <button class="pdf-loaded-change" onclick="document.getElementById('file-input').click()">Cambiar</button>
+    </div>
+  </div>
+
+  <span class="sidebar-label">Resumen</span>
+  <div class="stats-grid">
+    <div class="stat-chip cp-chip" id="sc-cp"><div class="stat-chip-value" id="sc-cp-val">—</div><div class="stat-chip-label">Rutas CP</div></div>
+    <div class="stat-chip fito-chip" id="sc-fito"><div class="stat-chip-value" id="sc-fito-val">—</div><div class="stat-chip-label">Con FITO</div></div>
+    <div class="stat-chip uni-chip" id="sc-uni"><div class="stat-chip-value" id="sc-uni-val">—</div><div class="stat-chip-label">Unificadas</div></div>
+    <div class="stat-chip total-chip" id="sc-total"><div class="stat-chip-value" id="sc-total-val">—</div><div class="stat-chip-label">Pág. totales</div></div>
+  </div>
+
+  <div id="page-match" class="page-match"></div>
+
+  <div class="sidebar-cta">
+    <div class="split-progress" id="split-progress">
+      <div class="sp-label"><span id="sp-label-text">Procesando...</span><span id="sp-pct">0%</span></div>
+      <div class="sp-track"><div class="sp-fill" id="sp-fill"></div></div>
+    </div>
+    <button class="btn-primary" id="split-btn" onclick="splitPDF()" disabled>✂&nbsp; Dividir PDF</button>
+    <button class="btn-yellow" id="zip-btn" onclick="downloadZip()" style="display:none" disabled>🗜️&nbsp; Descargar todo como ZIP</button>
+  </div>
+</aside>
+
+<!-- ════ MAIN ════ -->
+<main class="main">
+  <input type="file" id="file-input" accept="application/pdf" style="display:none">
+
+  <div class="success-banner" id="success-banner">
+    <div class="success-banner-icon">✅</div>
+    <div class="success-banner-text">
+      <div class="success-banner-title" id="success-title">¡Archivos listos!</div>
+      <div class="success-banner-sub" id="success-sub"></div>
+    </div>
+  </div>
+
+  <!-- PANEL 1: PDF -->
+  <div class="panel" id="panel-pdf">
+    <div class="panel-header">
+      <div class="panel-step-badge" id="p1-badge"><span>1</span></div>
+      <div class="panel-title-block">
+        <div class="panel-title">Cargar PDF escaneado</div>
+        <div class="panel-desc">Sube el archivo con todas las rutas del día</div>
+      </div>
+      <button class="panel-toggle" id="p1-toggle" onclick="togglePanel('p1')">▼</button>
+    </div>
+    <div class="panel-body-wrap" id="p1-body">
+      <div class="panel-body">
+        <div class="drop-zone" id="drop-zone">
+          <div class="dz-content">
+            <div class="dz-upload-ring">📂</div>
+            <div class="dz-title">Arrastra el PDF aquí</div>
+            <div class="dz-sub">Solo archivos <strong>.pdf</strong></div>
+            <button class="dz-btn" onclick="event.stopPropagation();document.getElementById('file-input').click()">Seleccionar archivo</button>
+          </div>
+        </div>
+        <div class="dz-loaded" id="dz-loaded">
+          <div class="dz-loaded-icon">📄</div>
+          <div class="dz-loaded-info">
+            <div class="dz-loaded-name" id="dz-loaded-name"></div>
+            <div class="dz-loaded-pages" id="dz-loaded-pages"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 2: CORRECTION -->
+  <div class="panel locked" id="panel-correction">
+    <div class="panel-header">
+      <div class="panel-step-badge" id="p2-badge"><span>2</span></div>
+      <div class="panel-title-block">
+        <div class="panel-title">Herramientas de corrección</div>
+        <div class="panel-desc">Detecta y corrige orientación de páginas antes de dividir</div>
+      </div>
+      <button class="panel-toggle" id="p2-toggle" onclick="togglePanel('p2')">▼</button>
+    </div>
+    <div class="panel-body-wrap" id="p2-body">
+
+      <!-- Orientation detection banner -->
+      <div class="panel-body">
+        <div class="orient-banner" id="orient-banner">
+          <div class="orient-banner-title" id="orient-banner-title"></div>
+          <div class="orient-banner-sub" id="orient-banner-sub"></div>
+          <div class="orient-progress" id="orient-progress" style="display:none">
+            <div class="orient-progress-fill" id="orient-progress-fill"></div>
+          </div>
+          <div class="orient-actions" id="orient-actions"></div>
+        </div>
+
+        <!-- Rotation global -->
+        <div class="rot-controls">
+          <div class="rot-row">
+            <div class="rot-label">Rotar todo el PDF</div>
+            <div class="rot-btns">
+              <button class="rot-btn" title="90° izquierda" onclick="rotateAll(-90)">↺</button>
+              <button class="rot-btn" title="180°" onclick="rotateAll(180)">↕</button>
+              <button class="rot-btn" title="90° derecha" onclick="rotateAll(90)">↻</button>
+              <button class="rot-btn rot-btn-reset" title="Quitar correcciones globales" onclick="resetAll()">✕ Todo</button>
+            </div>
+          </div>
+          <div class="rot-row">
+            <div class="rot-label">Página individual</div>
+            <div class="rot-btns" style="align-items:center;gap:8px;flex-wrap:wrap;">
+              <select class="page-select" id="page-select" onchange="onPageSelectChange()">
+                <option value="">— página —</option>
+              </select>
+              <button class="rot-btn" title="90° izquierda" onclick="rotatePage(-90)">↺</button>
+              <button class="rot-btn" title="180°" onclick="rotatePage(180)">↕</button>
+              <button class="rot-btn" title="90° derecha" onclick="rotatePage(90)">↻</button>
+              <button class="rot-btn rot-btn-reset" onclick="resetPage()">✕ Pág.</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thumbnail strip -->
+        <div class="thumb-strip-wrap">
+          <div class="thumb-strip-label">Miniaturas — haz clic para seleccionar</div>
+          <div class="thumb-strip" id="thumb-strip">
+            <div class="preview-empty" style="padding:16px 0;width:100%;">
+              <div class="pe-icon" style="font-size:20px;">🖼️</div>
+              <p>Las miniaturas aparecerán aquí al cargar el PDF</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PANEL 3: DETECT / CONFIGURE -->
+  <div class="panel locked" id="panel-detect">
+    <div class="panel-header">
+      <div class="panel-step-badge" id="p3-badge"><span>3</span></div>
+      <div class="panel-title-block">
+        <div class="panel-title">Configurar rutas</div>
+        <div class="panel-desc">Detección automática desde Excel o configuración manual</div>
+      </div>
+      <button class="panel-toggle" id="p3-toggle" onclick="togglePanel('p3')">▼</button>
+    </div>
+    <div class="panel-body-wrap" id="p3-body">
+      <div class="panel-body">
+        <div class="input-label">Detección automática desde Excel <span class="label-tag">RECOMENDADO</span></div>
+        <textarea class="input-field" id="table-input" rows="5"
+          placeholder="Copia desde Excel y pega aquí. Columnas requeridas: RUTA, TRACTOR, CERT&#10;Columna opcional: UNIDAD (o CAJA) — mejora la detección de rutas unificadas&#10;&#10;RUTA&#9;ENTREGA&#9;TRACTOR&#9;UNIDAD&#9;CERT&#10;2101&#9;TABASCO&#9;FS-204&#9;C-01&#9;TIF&#10;2102&#9;TABASCO&#9;FS-204&#9;C-02&#9;TIF/FITO"></textarea>
+        <div class="input-hint">💡 Selecciona todas las filas en Excel → Ctrl+C → pega aquí. Las columnas extra no importan.</div>
+        <button class="detect-btn" id="detect-btn" onclick="detectFromTable()" disabled>⚡ Detectar rutas automáticamente</button>
+        <div class="detect-result-bar" id="detect-result-bar">
+          <span class="drb-title">✅ Listo</span>
+          <div class="drb-chips" id="drb-chips"></div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="or-line">o configura manualmente</div>
+        <div class="two-col-inputs">
+          <div>
+            <div class="input-label input-col-label-cp">Todas las rutas del escaneo</div>
+            <textarea class="input-field textarea-route" id="all-input"
+              placeholder="5201&#10;5202&#10;5201-5202&#10;&#10;Una por línea. Unificadas con guión."></textarea>
+            <div class="input-hint">Todas las rutas en orden de escaneo. Unificadas con guión (2101-2102).</div>
+          </div>
+          <div>
+            <div class="input-label input-col-label-fito">Rutas con FITO</div>
+            <textarea class="input-field textarea-route" id="fito-input"
+              placeholder="5202&#10;5201-5202&#10;&#10;Solo las que tienen hoja FITO"></textarea>
+            <div class="input-hint">Solo las rutas con certificación FITO. Deben coincidir con la lista general.</div>
+          </div>
+        </div>
+        <div class="callout">
+          <span class="callout-icon">🚛</span>
+          <span><strong>Rutas unificadas:</strong> mismo tractor + distinta caja → se escriben con guión (ej. <strong>2101-2102</strong>) y generan un CP y FITO compartido. Si la columna UNIDAD está disponible, la detección automática es más precisa.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 4: PREVIEW -->
+  <div class="panel locked" id="panel-preview">
+    <div class="panel-header">
+      <div class="panel-step-badge" id="p4-badge"><span>4</span></div>
+      <div class="panel-title-block">
+        <div class="panel-title">Vista previa del escaneo</div>
+        <div class="panel-desc">Verifica el orden y nomenclatura antes de dividir</div>
+      </div>
+      <button class="panel-toggle" id="p4-toggle" onclick="togglePanel('p4')">▼</button>
+    </div>
+    <div class="panel-body-wrap" id="p4-body">
+      <div class="panel-body">
+        <div id="preview-content">
+          <div class="preview-empty"><div class="pe-icon">📋</div><p>Configura las rutas para ver la vista previa</p></div>
+        </div>
+        <div class="alert-inline" id="mismatch-alert"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 5: DOWNLOADS -->
+  <div class="panel download-panel" id="panel-downloads">
+    <div class="panel-header">
+      <div class="panel-step-badge" id="p5-badge"><span>5</span></div>
+      <div class="panel-title-block">
+        <div class="panel-title">Archivos generados</div>
+        <div class="panel-desc" id="dl-panel-desc">Listos para descargar</div>
+      </div>
+      <button class="panel-toggle" id="p5-toggle" onclick="togglePanel('p5')">▼</button>
+    </div>
+    <div class="panel-body-wrap" id="p5-body">
+      <div class="panel-body">
+        <div class="dl-summary-line" id="dl-summary" style="margin-bottom:14px;"></div>
+        <div class="dl-grid" id="dl-grid"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<div id="toast-container"></div>
+<div class="mobile-fab">
+  <button class="btn-primary" id="mobile-split-btn" onclick="splitPDF()" disabled style="border-radius:9999px;padding:14px 28px;box-shadow:0 8px 24px rgba(37,99,235,0.4)">✂ Dividir PDF</button>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let pdfFile      = null;
+let totalPages   = 0;
+let pdfBytes     = null;   // cached ArrayBuffer
+let pageRotations= {};     // { pageIndex: angleDelta }
+let warnPages    = [];     // [{ pageIndex, suggestedDelta }]
+let generatedFiles = [];
+let currentStep  = 1;
+let selectedThumbPage = null; // 0-based index
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function parseList(raw){ return raw.split(/[\n,]+/).map(s=>s.trim()).filter(Boolean); }
+function makeFilename(route,type){ return `${route} ${type}.pdf`; }
+function buildAssignments(allRoutes,fitoSet){
+  return allRoutes.flatMap(route=>{
+    const a=[{route,type:'CP',unified:route.includes('-')}];
+    if(fitoSet.has(route)) a.push({route,type:'FITO',unified:route.includes('-')});
+    return a;
+  });
+}
+function normalizeAngle(a){ return ((a%360)+360)%360; }
+
+// ══════════════════════════════════════════
+//  UNIFICATION ENGINE  (TRACTOR + CAJA)
+// ══════════════════════════════════════════
+const RULES=[
+  // Rule 1: different tractors → never unify
+  (a,b)=>a.tractor!==b.tractor ? false : null,
+  // Rule 2: same tractor + same caja → second trip / economico → do NOT unify
+  (a,b)=>(a.caja&&b.caja&&a.caja===b.caja) ? false : null,
+  // Rule 3: same tractor + different caja → unify
+  (a,b)=>(a.caja&&b.caja&&a.caja!==b.caja) ? true : null,
+  // Rule 4: fallback — same tractor, no caja info → unify (legacy behavior)
+  ()=>true
+];
+
+function shouldUnify(a,b){
+  for(const rule of RULES){
+    const r=rule(a,b);
+    if(r!==null) return r;
+  }
+  return true;
+}
+
+// ══════════════════════════════════════════
+//  STEPS
+// ══════════════════════════════════════════
+function setStep(n){
+  currentStep=n;
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById('ps'+i);
+    el.className='ps-item'+(i<n?' done':i===n?' active':'');
+  }
+  if(n>=2) document.getElementById('panel-correction').classList.remove('locked');
+  if(n>=3) document.getElementById('panel-detect').classList.remove('locked');
+  if(n>=4) document.getElementById('panel-preview').classList.remove('locked');
+  if(n>=5){
+    document.getElementById('panel-downloads').classList.add('show');
+    document.getElementById('success-banner').classList.add('show');
+  }
+}
+
+function togglePanel(id){
+  const body=document.getElementById(id+'-body');
+  const btn =document.getElementById(id+'-toggle');
+  const c=body.classList.toggle('collapsed');
+  btn.textContent=c?'▶':'▼';
+}
+
+// ══════════════════════════════════════════
+//  DROP ZONE / FILE LOAD
+// ══════════════════════════════════════════
+const dz=document.getElementById('drop-zone');
+const fi=document.getElementById('file-input');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+dz.addEventListener('click',()=>fi.click());
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag-over');
+  const f=e.dataTransfer.files[0];
+  if(f?.type==='application/pdf') loadFile(f);
+  else toast('Solo se aceptan archivos .pdf','error');
+});
+fi.addEventListener('change',()=>{if(fi.files[0])loadFile(fi.files[0]);});
+
+async function loadFile(f){
+  pdfFile=f;
+  pdfBytes=await f.arrayBuffer();
+  // pdf.js detaches the buffer — pass a copy so pdfBytes stays intact for pdf-lib
+  const pdf=await pdfjsLib.getDocument(pdfBytes.slice(0)).promise;
+  totalPages=pdf.numPages;
+  pageRotations={};
+  warnPages=[];
+  generatedFiles=[];
+
+  // UI updates
+  document.getElementById('dz-loaded-name').textContent=f.name;
+  document.getElementById('dz-loaded-pages').textContent=`${totalPages} páginas`;
+  document.getElementById('dz-loaded').classList.add('show');
+  document.getElementById('sb-pdf-empty').style.display='none';
+  document.getElementById('sb-pdf-loaded').style.display='flex';
+  document.getElementById('sb-pdf-name').textContent=f.name;
+  document.getElementById('sb-pdf-meta').textContent=`${totalPages} páginas`;
+  document.getElementById('panel-pdf').classList.add('done-panel');
+
+  // Populate page select
+  const sel=document.getElementById('page-select');
+  sel.innerHTML='<option value="">— página —</option>';
+  for(let i=1;i<=totalPages;i++) sel.innerHTML+=`<option value="${i-1}">Página ${i}</option>`;
+
+  // Unlock PDF (1), Correction (2) AND Routes (3) — user can go directly to step 3
+  setStep(3);
+  // Collapse panel 1, keep panel 2 collapsed by default
+  setTimeout(()=>{
+    togglePanel('p1');
+    // Ensure panel 2 starts collapsed — user only opens it if needed
+    const p2body=document.getElementById('p2-body');
+    const p2btn =document.getElementById('p2-toggle');
+    if(!p2body.classList.contains('collapsed')){
+      p2body.classList.add('collapsed');
+      p2btn.textContent='▶';
+    }
+    // Scroll to panel 3
+    setTimeout(()=>document.getElementById('panel-detect').scrollIntoView({behavior:'smooth',block:'start'}),200);
+  },400);
+
+  toast(`PDF cargado — ${totalPages} páginas`,'success',f.name);
+
+  // Run orientation analysis + render thumbnails in parallel
+  renderThumbnails(pdf);
+  analyzeOrientation(pdf);
+  refresh();
+}
+
+// ══════════════════════════════════════════
+//  ORIENTATION DETECTION
+// ══════════════════════════════════════════
+async function analyzeOrientation(pdf){
+  const banner=document.getElementById('orient-banner');
+  const bTitle=document.getElementById('orient-banner-title');
+  const bSub  =document.getElementById('orient-banner-sub');
+  const bProg =document.getElementById('orient-progress');
+  const bFill =document.getElementById('orient-progress-fill');
+  const bActs =document.getElementById('orient-actions');
+
+  banner.className='orient-banner scanning';
+  bTitle.textContent='Analizando orientación de páginas...';
+  bSub.textContent=`Revisando ${totalPages} páginas`;
+  bProg.style.display='block';
+  bFill.style.width='0%';
+  bActs.innerHTML='';
+
+  const results=[];
+
+  for(let i=0;i<totalPages;i++){
+    const page=await pdf.getPage(i+1);
+    const vp=page.getViewport({scale:1});
+
+    // Criterion 1: PDF metadata rotation
+    const metaRot=page.rotate||0;
+
+    // Criterion 2: Aspect ratio heuristic
+    const isLandscape=vp.width>vp.height;
+    const aspectRot=isLandscape?90:0;
+
+    results.push({pageIndex:i,metaRot,aspectRot,isLandscape});
+    bFill.style.width=Math.round(((i+1)/totalPages)*100)+'%';
+  }
+
+  // Dominant orientation = most common metaRot
+  const rotCounts={};
+  results.forEach(r=>{rotCounts[r.metaRot]=(rotCounts[r.metaRot]||0)+1;});
+  const dominantRot=parseInt(Object.entries(rotCounts).sort((a,b)=>b[1]-a[1])[0][0]);
+
+  // Pages that deviate from dominant
+  warnPages=results
+    .filter(r=>r.metaRot!==dominantRot)
+    .map(r=>({
+      pageIndex:r.pageIndex,
+      currentRot:r.metaRot,
+      suggestedDelta:(dominantRot-r.metaRot+360)%360
+    }));
+
+  bProg.style.display='none';
+
+  if(warnPages.length===0){
+    // All good — silent toast only, panel 2 stays collapsed
+    banner.className='orient-banner'; // hide banner
+    banner.style.display='none';
+    toast('✓ Orientación uniforme — todas las páginas están correctas','success');
+  } else {
+    banner.className='orient-banner warn';
+    const pageNums=warnPages.map(w=>`Pág.${w.pageIndex+1}`).join(', ');
+    bTitle.textContent=`⚠ ${warnPages.length} página(s) con orientación diferente`;
+    bSub.textContent=`Orientación dominante: ${dominantRot}°. Páginas afectadas: ${pageNums}.`;
+    bActs.innerHTML=`
+      <button class="btn-sm btn-sm-amber" onclick="autoFixOrientation()">✓ Corregir automáticamente</button>
+      <button class="btn-sm btn-sm-outline" onclick="reviewManually()">👁 Revisar manualmente</button>
+      <button class="btn-sm btn-sm-ghost" onclick="dismissOrientBanner()">Ignorar</button>
+    `;
+    // Expand panel 2 so the user sees the warning
+    const p2body=document.getElementById('p2-body');
+    const p2btn =document.getElementById('p2-toggle');
+    if(p2body.classList.contains('collapsed')){
+      p2body.classList.remove('collapsed');
+      p2btn.textContent='▼';
+    }
+    document.getElementById('panel-correction').scrollIntoView({behavior:'smooth',block:'start'});
+    // Highlight warn thumbs
+    warnPages.forEach(w=>markThumbWarn(w.pageIndex,true));
+  }
+}
+
+function autoFixOrientation(){
+  warnPages.forEach(w=>{
+    pageRotations[w.pageIndex]=(pageRotations[w.pageIndex]||0)+w.suggestedDelta;
+    markThumbCorrection(w.pageIndex);
+  });
+  const banner=document.getElementById('orient-banner');
+  banner.className='orient-banner ok';
+  document.getElementById('orient-banner-title').textContent=`✓ ${warnPages.length} página(s) corregida(s)`;
+  document.getElementById('orient-banner-sub').textContent='Correcciones aplicadas automáticamente. Puedes ajustar manualmente desde la tira de miniaturas.';
+  document.getElementById('orient-actions').innerHTML='';
+  toast(`${warnPages.length} página(s) corregidas automáticamente`,'success');
+}
+
+function reviewManually(){
+  if(warnPages.length>0){
+    selectThumbPage(warnPages[0].pageIndex);
+    document.getElementById('page-select').value=warnPages[0].pageIndex;
+    document.getElementById('panel-correction').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+}
+
+function dismissOrientBanner(){
+  document.getElementById('orient-banner').style.display='none';
+}
+
+// ══════════════════════════════════════════
+//  THUMBNAILS
+// ══════════════════════════════════════════
+async function renderThumbnails(pdf){
+  const strip=document.getElementById('thumb-strip');
+  strip.innerHTML='';
+
+  for(let i=0;i<totalPages;i++){
+    // Placeholder
+    const placeholder=document.createElement('div');
+    placeholder.className='thumb-item';
+    placeholder.id=`thumb-${i}`;
+    placeholder.innerHTML=`<div class="thumb-canvas-wrap"><div class="thumb-loading"><div class="thumb-spinner"></div></div></div><div class="thumb-num">Pág.${i+1}</div>`;
+    placeholder.onclick=()=>selectThumbPage(i);
+    strip.appendChild(placeholder);
+
+    // Render async
+    renderOneThumbnail(pdf,i);
+  }
+}
+
+async function renderOneThumbnail(pdf,idx){
+  const page=await pdf.getPage(idx+1);
+  const scale=72/Math.max(page.getViewport({scale:1}).width,page.getViewport({scale:1}).height);
+  const vp=page.getViewport({scale});
+  const canvas=document.createElement('canvas');
+  canvas.width=vp.width;canvas.height=vp.height;
+  await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+
+  const item=document.getElementById(`thumb-${idx}`);
+  if(!item) return;
+  const wrap=item.querySelector('.thumb-canvas-wrap');
+  wrap.innerHTML='';
+  wrap.appendChild(canvas);
+}
+
+function selectThumbPage(idx){
+  // Deselect old
+  if(selectedThumbPage!==null){
+    const old=document.getElementById(`thumb-${selectedThumbPage}`);
+    if(old) old.classList.remove('selected');
+  }
+  selectedThumbPage=idx;
+  const el=document.getElementById(`thumb-${idx}`);
+  if(el){
+    el.classList.add('selected');
+    el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  }
+  document.getElementById('page-select').value=idx;
+}
+
+function markThumbWarn(idx,on){
+  const item=document.getElementById(`thumb-${idx}`);
+  if(!item) return;
+  item.classList.toggle('has-warn',on);
+  const wrap=item.querySelector('.thumb-canvas-wrap');
+  let badge=wrap.querySelector('.thumb-badge');
+  if(on&&!badge){
+    badge=document.createElement('div');
+    badge.className='thumb-badge';
+    badge.textContent='⚠';
+    wrap.appendChild(badge);
+  } else if(!on&&badge){ badge.remove(); }
+}
+
+function markThumbCorrection(idx){
+  const item=document.getElementById(`thumb-${idx}`);
+  if(!item) return;
+  item.classList.remove('has-warn');
+  item.classList.add('has-correction');
+  const wrap=item.querySelector('.thumb-canvas-wrap');
+  let badge=wrap.querySelector('.thumb-badge');
+  if(!badge){ badge=document.createElement('div');badge.className='thumb-badge correction';wrap.appendChild(badge); }
+  badge.className='thumb-badge correction';
+  const rot=normalizeAngle(pageRotations[idx]||0);
+  badge.textContent=rot?`${rot}°`:'✓';
+}
+
+function onPageSelectChange(){
+  const v=document.getElementById('page-select').value;
+  if(v!=='') selectThumbPage(parseInt(v));
+}
+
+// ══════════════════════════════════════════
+//  ROTATION CONTROLS
+// ══════════════════════════════════════════
+function rotateAll(delta){
+  for(let i=0;i<totalPages;i++){
+    pageRotations[i]=(pageRotations[i]||0)+delta;
+    if(pageRotations[i]===0) delete pageRotations[i];
+    markThumbCorrection(i);
+  }
+  toast(`Todas las páginas rotadas ${delta>0?'+':''}${delta}°`,'info');
+}
+
+function resetAll(){
+  pageRotations={};
+  for(let i=0;i<totalPages;i++){
+    const item=document.getElementById(`thumb-${i}`);
+    if(item){
+      item.classList.remove('has-correction');
+      const badge=item.querySelector('.thumb-badge.correction');
+      if(badge) badge.remove();
+    }
+  }
+  toast('Correcciones de rotación eliminadas','info');
+}
+
+function rotatePage(delta){
+  const v=document.getElementById('page-select').value;
+  if(v==='') return toast('Selecciona una página primero','warning');
+  const idx=parseInt(v);
+  pageRotations[idx]=(pageRotations[idx]||0)+delta;
+  if(pageRotations[idx]===0) delete pageRotations[idx];
+  markThumbCorrection(idx);
+  toast(`Pág.${idx+1} rotada ${delta>0?'+':''}${delta}°`,'info');
+}
+
+function resetPage(){
+  const v=document.getElementById('page-select').value;
+  if(v==='') return;
+  const idx=parseInt(v);
+  delete pageRotations[idx];
+  const item=document.getElementById(`thumb-${idx}`);
+  if(item){
+    item.classList.remove('has-correction');
+    const badge=item.querySelector('.thumb-badge.correction');
+    if(badge) badge.remove();
+  }
+}
+
+// ══════════════════════════════════════════
+//  AUTO-DETECT FROM EXCEL TABLE
+// ══════════════════════════════════════════
+const tableInput=document.getElementById('table-input');
+tableInput.addEventListener('input',()=>{
+  document.getElementById('detect-btn').disabled=tableInput.value.trim().length<5;
+});
+
+function detectFromTable(){
+  const raw=tableInput.value.trim();
+  if(!raw) return;
+
+  const lines=raw.split('\n').map(l=>l.split('\t').map(c=>c.trim()));
+  let headerIdx=-1,colRuta=-1,colTractor=-1,colCert=-1,colCaja=-1;
+
+  for(let i=0;i<Math.min(lines.length,5);i++){
+    const row=lines[i].map(c=>c.toUpperCase());
+    const rIdx=row.findIndex(c=>c==='RUTA'||c==='ROUTE');
+    const tIdx=row.findIndex(c=>c.includes('TRACTOR')||c==='TRACTO');
+    const cIdx=row.findIndex(c=>c==='CERT'||c==='CERTIFICADO');
+    const uIdx=row.findIndex(c=>c==='UNIDAD'||c==='CAJA'||c==='TRAILER');
+    if(rIdx>=0&&tIdx>=0){headerIdx=i;colRuta=rIdx;colTractor=tIdx;colCert=cIdx;colCaja=uIdx;break;}
+  }
+
+  if(headerIdx<0){ toast('No se encontró encabezado RUTA/TRACTOR. Verifica el formato.','error'); return; }
+
+  const hasUnidad=colCaja>=0;
+  const dataLines=lines.slice(headerIdx+1).filter(r=>r.length>Math.max(colRuta,colTractor));
+
+  // Build row objects
+  const allRows=[];
+  const tractorGroups={};
+  for(const row of dataLines){
+    const ruta   =row[colRuta]?.trim();
+    const tractor=row[colTractor]?.trim();
+    const cert   =colCert>=0?row[colCert]?.trim():'';
+    const caja   =colCaja>=0?row[colCaja]?.trim():'';
+    if(!ruta||!tractor) continue;
+    const obj={ruta,tractor,cert,caja};
+    if(!tractorGroups[tractor]) tractorGroups[tractor]=[];
+    tractorGroups[tractor].push(obj);
+    allRows.push(obj);
+  }
+
+  // Apply UnificationEngine
+  const unifiedMap={};
+  for(const routes of Object.values(tractorGroups)){
+    if(routes.length<2) continue;
+    // Check all pairs in group
+    const pairToUnify=[];
+    for(let i=0;i<routes.length;i++){
+      for(let j=i+1;j<routes.length;j++){
+        if(shouldUnify(routes[i],routes[j])){
+          pairToUnify.push([routes[i].ruta,routes[j].ruta]);
+        }
+      }
+    }
+    for(const [a,b] of pairToUnify){
+      const sorted=[a,b].sort((x,y)=>Number(x)-Number(y));
+      const label=sorted.join('-');
+      unifiedMap[a]=label;
+      unifiedMap[b]=label;
+    }
+  }
+
+  const seenLabels=new Set();
+  const orderedRoutes=[];
+  const fitoSet=new Set();
+
+  for(const {ruta,cert} of allRows){
+    const label=unifiedMap[ruta]||ruta;
+    if(!seenLabels.has(label)){seenLabels.add(label);orderedRoutes.push(label);}
+    if(cert&&cert.toUpperCase().includes('FITO')) fitoSet.add(label);
+  }
+
+  document.getElementById('all-input').value=orderedRoutes.join('\n');
+  document.getElementById('fito-input').value=[...fitoSet].join('\n');
+  document.getElementById('all-input').classList.add('auto-filled');
+  document.getElementById('fito-input').classList.add('auto-filled');
+
+  const unifiedCount=new Set(Object.values(unifiedMap)).size;
+  const chips=document.getElementById('drb-chips');
+  chips.innerHTML=`
+    <span class="drb-chip drb-chip-green">✅ ${orderedRoutes.length} rutas</span>
+    <span class="drb-chip drb-chip-green">🌿 ${fitoSet.size} FITO</span>
+    ${unifiedCount?`<span class="drb-chip drb-chip-purple">🔗 ${unifiedCount} unificada(s)</span>`:''}
+    ${!hasUnidad?`<span class="drb-chip drb-chip-warn">⚠ Sin columna UNIDAD — precisión parcial</span>`:''}
+  `;
+  document.getElementById('detect-result-bar').classList.add('show');
+
+  refresh();
+  setStep(Math.max(currentStep,4));
+  toast(`⚡ ${orderedRoutes.length} rutas detectadas`,'success',
+    `${fitoSet.size} FITO${unifiedCount?` · ${unifiedCount} unificada(s)`:''}${!hasUnidad?' · Sin col. UNIDAD':''}`);
+}
+
+// ══════════════════════════════════════════
+//  LIVE REFRESH
+// ══════════════════════════════════════════
+document.getElementById('all-input').addEventListener('input',refresh);
+document.getElementById('fito-input').addEventListener('input',refresh);
+
+function refresh(){
+  const allRoutes =parseList(document.getElementById('all-input').value);
+  const fitoRoutes=parseList(document.getElementById('fito-input').value);
+  const fitoSet   =new Set(fitoRoutes);
+  const assignments=buildAssignments(allRoutes,fitoSet);
+
+  const cpCount   =assignments.filter(a=>a.type==='CP'&&!a.unified).length;
+  const fitoCount =assignments.filter(a=>a.type==='FITO').length;
+  const uniCount  =allRoutes.filter(r=>r.includes('-')).length;
+  const total     =assignments.length;
+
+  function updateStat(id,valId,value,hasVal){
+    document.getElementById(valId).textContent=hasVal?value:'—';
+    document.getElementById(id).classList.toggle('has-value',hasVal);
+  }
+  updateStat('sc-cp','sc-cp-val',cpCount,cpCount>0);
+  updateStat('sc-fito','sc-fito-val',fitoCount,fitoCount>0);
+  updateStat('sc-uni','sc-uni-val',uniCount,uniCount>0);
+  updateStat('sc-total','sc-total-val',total,total>0);
+
+  // Page match
+  const pmEl=document.getElementById('page-match');
+  if(totalPages>0&&total>0){
+    if(total===totalPages){pmEl.className='page-match ok';pmEl.innerHTML='✓ Páginas coinciden perfectamente';}
+    else if(total<totalPages){pmEl.className='page-match warn';pmEl.innerHTML=`<strong>⚠ ${totalPages-total} pág. sin nombre</strong><br>PDF: ${totalPages} · Esperadas: ${total}`;}
+    else{pmEl.className='page-match error-s';pmEl.innerHTML=`<strong>⛔ Faltan ${total-totalPages} páginas</strong><br>PDF: ${totalPages} · Esperadas: ${total}`;}
+  } else { pmEl.className='page-match'; }
+
+  // Inline alert
+  const alertEl=document.getElementById('mismatch-alert');
+  const allSet=new Set(allRoutes);
+  const unknownFito=fitoRoutes.filter(r=>!allSet.has(r));
+  const warns=[];
+  if(unknownFito.length) warns.push(`⚠ Rutas FITO no encontradas en lista general: ${unknownFito.join(', ')}`);
+  if(totalPages>0&&total!==totalPages){
+    if(total<totalPages) warns.push(`⚠ ${totalPages-total} página(s) al final del PDF quedarán sin nombre.`);
+    else warns.push(`⛔ Faltan ${total-totalPages} página(s) — el PDF tiene ${totalPages} y se esperan ${total}.`);
+  }
+  alertEl.innerHTML=warns.length?warns.join('<br>'):'';
+  alertEl.className='alert-inline'+(warns.length?(warns[0].startsWith('⛔')?' error-a':' warn'):'');
+
+  // Preview table
+  const previewContent=document.getElementById('preview-content');
+  if(!assignments.length){
+    previewContent.innerHTML=`<div class="preview-empty"><div class="pe-icon">📋</div><p>Configura las rutas para ver la vista previa</p></div>`;
+    document.getElementById('split-btn').disabled=true;
+    document.getElementById('mobile-split-btn').disabled=true;
+    return;
+  }
+
+  let rows='';
+  assignments.forEach(({route,type,unified},i)=>{
+    const pageNum=i+1;
+    const inRange=totalPages===0||pageNum<=totalPages;
+    const filename=makeFilename(route,type);
+    const typeClass=unified?'unified':type.toLowerCase();
+    const tagLabel=unified?`${type} · UNIF`:type;
+    const rotDelta=pageRotations[i];
+    const rotBadge=rotDelta?`<span class="row-tag" style="background:var(--blue-50);color:var(--blue-600);border:1px solid var(--blue-100);">${normalizeAngle(rotDelta)}°</span>`:'';
+    rows+=`<tr>
+      <td class="td-num">${pageNum}</td>
+      <td class="td-page">${inRange?`Pág.&nbsp;${pageNum}`:'—'}</td>
+      <td class="td-file ${typeClass}">${filename}</td>
+      <td><span class="row-tag tag-${typeClass}">${tagLabel}</span>${rotBadge}${!inRange?' <span class="row-tag tag-warn">sin pág.</span>':''}</td>
+    </tr>`;
+  });
+
+  previewContent.innerHTML=`
+    <div class="preview-header">
+      <div class="preview-title">Orden del escaneo</div>
+      <div class="preview-count">${assignments.length} archivo(s) a generar</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th class="td-num">#</th><th class="td-page">Pág. PDF</th><th>Nombre del archivo</th><th>Tipo</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+
+  const canSplit=!!pdfFile&&assignments.length>0;
+  document.getElementById('split-btn').disabled=!canSplit;
+  document.getElementById('mobile-split-btn').disabled=!canSplit;
+  if(canSplit) setStep(Math.max(currentStep,4));
+}
+
+// ══════════════════════════════════════════
+//  SPLIT PDF
+// ══════════════════════════════════════════
+async function splitPDF(){
+  if(!pdfFile) return toast('Selecciona un archivo PDF primero','error');
+  const allRoutes =parseList(document.getElementById('all-input').value);
+  const fitoRoutes=parseList(document.getElementById('fito-input').value);
+  if(!allRoutes.length) return toast('Agrega las rutas primero','error');
+
+  const assignments=buildAssignments(allRoutes,new Set(fitoRoutes));
+  const limit=Math.min(assignments.length,totalPages);
+
+  const splitBtn =document.getElementById('split-btn');
+  const mSplitBtn=document.getElementById('mobile-split-btn');
+  splitBtn.disabled=true; mSplitBtn.disabled=true;
+  splitBtn.textContent='⏳ Procesando...';
+
+  const progressEl=document.getElementById('split-progress');
+  const fillEl    =document.getElementById('sp-fill');
+  const labelEl   =document.getElementById('sp-label-text');
+  const pctEl     =document.getElementById('sp-pct');
+  progressEl.classList.add('show');
+  document.getElementById('panel-downloads').classList.remove('show');
+  document.getElementById('success-banner').classList.remove('show');
+  document.getElementById('zip-btn').style.display='none';
+  generatedFiles=[];
+
+  // Load source once — ArrayBuffer gets detached after first load if reused
+  const srcDoc=await PDFLib.PDFDocument.load(pdfBytes.slice(0));
+
+  for(let i=0;i<limit;i++){
+    const {route,type}=assignments[i];
+    const newDoc=await PDFLib.PDFDocument.create();
+    const [copied]=await newDoc.copyPages(srcDoc,[i]);
+
+    // Apply rotation if any
+    const rotDelta=pageRotations[i];
+    if(rotDelta){
+      const currentRot=copied.getRotation().angle;
+      copied.setRotation(PDFLib.degrees(normalizeAngle(currentRot+rotDelta)));
+    }
+
+    newDoc.addPage(copied);
+    const bytes =await newDoc.save();
+    const blob  =new Blob([bytes],{type:'application/pdf'});
+    const url   =URL.createObjectURL(blob);
+    const filename=makeFilename(route,type);
+    generatedFiles.push({filename,bytes,url,type,unified:route.includes('-')});
+
+    const pct=Math.round(((i+1)/limit)*100);
+    fillEl.style.width=pct+'%';
+    labelEl.textContent=`Generando ${i+1} de ${limit}`;
+    pctEl.textContent=pct+'%';
+  }
+
+  progressEl.classList.remove('show');
+  splitBtn.disabled=false; mSplitBtn.disabled=false;
+  splitBtn.innerHTML='✂&nbsp; Dividir PDF';
+
+  showDownloads(generatedFiles);
+  setStep(5);
+  toast(`✅ ${generatedFiles.length} archivos generados`,'success','Descarga los archivos o el ZIP completo');
+}
+
+// ══════════════════════════════════════════
+//  DOWNLOADS
+// ══════════════════════════════════════════
+function showDownloads(files){
+  const panel=document.getElementById('panel-downloads');
+  const grid =document.getElementById('dl-grid');
+  panel.classList.add('show');
+  grid.innerHTML='';
+
+  const cpCount  =files.filter(f=>f.type==='CP'&&!f.unified).length;
+  const fitoCount=files.filter(f=>f.type==='FITO').length;
+  const uniCount =files.filter(f=>f.unified).length;
+
+  let summary=`<strong>${files.length} archivos</strong> &nbsp;·&nbsp; CP: ${cpCount} &nbsp;·&nbsp; FITO: ${fitoCount}`;
+  if(uniCount) summary+=` &nbsp;·&nbsp; Unificadas: ${uniCount}`;
+  document.getElementById('dl-summary').innerHTML=summary;
+  document.getElementById('dl-panel-desc').textContent=`${files.length} archivos listos`;
+
+  const hasRot=Object.keys(pageRotations).length>0;
+  const corrNote=hasRot?` · ${Object.keys(pageRotations).length} pág. con rotación aplicada`:'';
+
+  files.forEach(({filename,url,type,unified},idx)=>{
+    const colorClass=unified?'dl-unified':`dl-${type.toLowerCase()}`;
+    const nameClass =unified?'unified':type.toLowerCase();
+    const div=document.createElement('div');
+    div.className=`dl-item ${colorClass}`;
+    div.style.animationDelay=`${idx*18}ms`;
+    div.innerHTML=`
+      <div class="dl-file-icon">📄</div>
+      <div class="dl-info">
+        <div class="dl-name ${nameClass}">${filename}</div>
+        <div class="dl-meta">${unified?'Unificada · ':''}${type} · 1 pág.</div>
+      </div>
+      <a class="dl-btn-link" href="${url}" download="${filename}">↓ Bajar</a>`;
+    grid.appendChild(div);
+  });
+
+  document.getElementById('zip-btn').style.display='flex';
+  document.getElementById('zip-btn').disabled=false;
+  document.getElementById('success-title').textContent=`✅ ${files.length} archivos listos`;
+  document.getElementById('success-sub').textContent=`CP: ${cpCount} · FITO: ${fitoCount}${uniCount?` · Unificadas: ${uniCount}`:''}${corrNote}`;
+  document.getElementById('success-banner').classList.add('show');
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ══════════════════════════════════════════
+//  ZIP
+// ══════════════════════════════════════════
+async function downloadZip(){
+  if(!generatedFiles.length) return;
+  const btn=document.getElementById('zip-btn');
+  btn.disabled=true; btn.textContent='⏳ Preparando ZIP...';
+  const zip=new JSZip();
+  generatedFiles.forEach(({filename,bytes})=>zip.file(filename,bytes));
+  const zipBlob=await zip.generateAsync(
+    {type:'blob',compression:'DEFLATE',compressionOptions:{level:6}},
+    meta=>{btn.textContent=`🗜️ Comprimiendo ${Math.round(meta.percent)}%...`;}
+  );
+  const url=URL.createObjectURL(zipBlob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`rutas_${new Date().toISOString().slice(0,10)}.zip`; a.click();
+  URL.revokeObjectURL(url);
+  btn.disabled=false; btn.innerHTML='🗜️&nbsp; Descargar todo como ZIP';
+  toast(`⬇ ZIP descargado`,'success',`${generatedFiles.length} archivos comprimidos`);
+}
+
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+function toast(msg,type='info',sub=''){
+  const container=document.getElementById('toast-container');
+  const icons={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<div class="toast-icon">${icons[type]||'ℹ️'}</div><div class="toast-body"><div class="toast-msg">${msg}</div>${sub?`<div class="toast-sub">${sub}</div>`:''}</div>`;
+  el.onclick=()=>dismissToast(el);
+  container.appendChild(el);
+  setTimeout(()=>dismissToast(el),4000);
+}
+function dismissToast(el){
+  el.classList.add('hiding');
+  setTimeout(()=>el.remove(),200);
+}
+</script>
+</body>
+</html>
