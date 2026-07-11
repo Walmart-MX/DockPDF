@@ -1,1176 +1,1336 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="light">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SmartDispatch · CeDis VHSA</title>
+<title>DispatchDock v1.0 — CEDIS Walmart</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-/* ═══════════════════════════════════════════════════════
-   DESIGN TOKENS
-   Palette: deep navy / signal amber / slate grays
-   Signal language: navy=brand, amber=action/warn, 
-   green=success, red=critical, blue=info
-═══════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,400&display=swap');
+
 :root {
-  /* Brand */
-  --navy:       #00204A;
-  --navy-dk:    #001530;
-  --navy-md:    #0A3060;
-  --amber:      #F59E0B;
-  --amber-dk:   #D97706;
-  --amber-lt:   #FEF3C7;
-  --amber-bd:   #FCD34D;
-
-  /* Surfaces */
-  --bg:         #F1F4F9;
-  --surface:    #FFFFFF;
-  --surface2:   #F7F9FC;
-  --surface3:   #EEF2F8;
-
-  /* Borders */
-  --border:     #E2E8F2;
-  --border2:    #CBD5E8;
-
-  /* Text */
-  --text:       #0F172A;
-  --text2:      #334155;
-  --text3:      #64748B;
-  --text4:      #94A3B8;
-
-  /* Semantics */
-  --green:      #059669;
-  --green-bg:   #ECFDF5;
-  --green-bd:   #6EE7B7;
-  --red:        #DC2626;
-  --red-bg:     #FEF2F2;
-  --red-bd:     #FCA5A5;
-  --blue:       #2563EB;
-  --blue-bg:    #EFF6FF;
-  --blue-bd:    #93C5FD;
-  --orange:     #EA580C;
-  --orange-bg:  #FFF7ED;
-  --orange-bd:  #FDBA74;
-  --purple:     #7C3AED;
-  --purple-bg:  #F5F3FF;
-  --purple-bd:  #C4B5FD;
-
-  /* Shadows */
-  --shadow-xs:  0 1px 2px rgba(0,20,60,.06);
-  --shadow-sm:  0 1px 4px rgba(0,20,60,.08), 0 0 1px rgba(0,20,60,.04);
-  --shadow-md:  0 4px 16px rgba(0,20,60,.10), 0 1px 4px rgba(0,20,60,.06);
-  --shadow-lg:  0 12px 40px rgba(0,20,60,.14), 0 2px 8px rgba(0,20,60,.08);
-
-  /* Geometry */
-  --r:          8px;
-  --r-lg:       12px;
-  --r-xl:       16px;
+  --blue-50:#EFF6FF;--blue-100:#DBEAFE;--blue-200:#BFDBFE;--blue-400:#60A5FA;
+  --blue-500:#3B82F6;--blue-600:#2563EB;--blue-700:#1D4ED8;--blue-900:#1E3A5F;
+  --yellow-400:#FBBF24;--yellow-500:#F59E0B;
+  --green-50:#F0FDF4;--green-100:#DCFCE7;--green-200:#BBF7D0;
+  --green-400:#4ADE80;--green-500:#22C55E;--green-600:#16A34A;--green-700:#15803D;
+  --purple-50:#FAF5FF;--purple-100:#F3E8FF;--purple-400:#C084FC;
+  --purple-500:#A855F7;--purple-600:#9333EA;--purple-700:#7E22CE;
+  --amber-50:#FFFBEB;--amber-100:#FEF3C7;--amber-200:#FDE68A;
+  --amber-400:#FBBF24;--amber-500:#F59E0B;--amber-600:#D97706;--amber-700:#B45309;
+  --red-50:#FEF2F2;--red-100:#FEE2E2;--red-400:#F87171;--red-500:#EF4444;--red-600:#DC2626;
+  --gray-50:#F8FAFC;--gray-100:#F1F5F9;--gray-200:#E2E8F0;--gray-300:#CBD5E1;
+  --gray-400:#94A3B8;--gray-500:#64748B;--gray-600:#475569;--gray-700:#334155;
+  --gray-800:#1E293B;--gray-900:#0F172A;
+  --surface-0:#FFFFFF;--surface-1:#F8FAFC;--surface-2:#F1F5F9;
+  --color-text:var(--gray-800);--color-text-2:var(--gray-600);--color-text-3:var(--gray-400);
+  --color-border:var(--gray-200);--color-border-2:var(--gray-300);
+  --shadow-xs:0 1px 2px rgba(15,23,42,0.05);
+  --shadow-sm:0 1px 3px rgba(15,23,42,0.08),0 1px 2px -1px rgba(15,23,42,0.06);
+  --shadow-md:0 4px 6px -1px rgba(15,23,42,0.08),0 2px 4px -2px rgba(15,23,42,0.06);
+  --shadow-lg:0 10px 15px -3px rgba(15,23,42,0.08),0 4px 6px -4px rgba(15,23,42,0.05);
+  --shadow-xl:0 20px 25px -5px rgba(15,23,42,0.10),0 8px 10px -6px rgba(15,23,42,0.06);
+  --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:18px;--r-full:9999px;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --t-fast:100ms ease;--t-base:180ms ease;--t-slow:280ms cubic-bezier(0.4,0,0.2,1);
 }
 
-[data-theme="dark"] {
-  --bg:         #080E1A;
-  --surface:    #0F1927;
-  --surface2:   #162035;
-  --surface3:   #1C2940;
-  --border:     #1E3050;
-  --border2:    #263A58;
-  --text:       #E2EAF6;
-  --text2:      #8BA3C4;
-  --text3:      #4A6280;
-  --text4:      #2E4060;
-  --amber-lt:   #1C1400;
-  --green-bg:   #032015;
-  --red-bg:     #1C0404;
-  --blue-bg:    #040C24;
-  --orange-bg:  #1A0C00;
-  --purple-bg:  #0E0626;
-  --shadow-xs:  0 1px 2px rgba(0,0,0,.3);
-  --shadow-sm:  0 1px 4px rgba(0,0,0,.4);
-  --shadow-md:  0 4px 16px rgba(0,0,0,.5);
-  --shadow-lg:  0 12px 40px rgba(0,0,0,.6);
-}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:14px;-webkit-font-smoothing:antialiased;}
+body{font-family:var(--font);background:var(--surface-1);color:var(--color-text);min-height:100vh;line-height:1.5;}
 
-/* ── RESET ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 13px;
-  line-height: 1.5;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-button { font-family: inherit; cursor: pointer; }
-input, textarea { font-family: inherit; }
+/* ── APP SHELL ─────────────────────────── */
+.app{display:grid;grid-template-rows:56px 1fr;grid-template-columns:260px 1fr;grid-template-areas:"topbar topbar""sidebar main";min-height:100vh;}
 
-/* ── TOPBAR ── */
-.topbar {
-  position: fixed; top: 0; left: 0; right: 0; height: 54px;
-  background: var(--navy);
-  display: flex; align-items: center; padding: 0 24px; gap: 12px;
-  z-index: 100; box-shadow: 0 2px 16px rgba(0,0,0,.25);
-}
-[data-theme="dark"] .topbar { background: #030810; border-bottom: 1px solid var(--border); }
-.tb-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
-.tb-logo-mark {
-  width: 30px; height: 30px; background: var(--amber); border-radius: 7px;
-  display: flex; align-items: center; justify-content: center; font-size: 16px;
-  flex-shrink: 0;
-}
-.tb-wordmark { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: -.02em; }
-.tb-wordmark span { color: var(--amber); }
-.tb-divider { width: 1px; height: 18px; background: rgba(255,255,255,.15); }
-.tb-context { font-size: 11px; color: rgba(255,255,255,.4); letter-spacing: .01em; }
-.tb-spacer { flex: 1; }
+/* ── TOPBAR ────────────────────────────── */
+.topbar{grid-area:topbar;background:var(--gray-900);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;padding:0 20px 0 0;position:sticky;top:0;z-index:200;}
+.topbar-logo{width:260px;flex-shrink:0;display:flex;align-items:center;gap:11px;padding:0 18px;height:100%;border-right:1px solid rgba(255,255,255,0.06);}
+.logo-icon{width:32px;height:32px;background:var(--yellow-400);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-icon svg{width:20px;height:20px;}
+.logo-text{display:flex;flex-direction:column;}
+.logo-name{font-size:14px;font-weight:700;color:#fff;letter-spacing:-0.2px;line-height:1.2;}
+.logo-sub{font-size:9.5px;font-weight:500;color:rgba(255,255,255,0.35);letter-spacing:1.4px;text-transform:uppercase;}
+.topbar-center{flex:1;display:flex;align-items:center;padding:0 20px;}
+.progress-steps{display:flex;align-items:center;}
+.ps-item{display:flex;align-items:center;gap:8px;position:relative;}
+.ps-item+.ps-item::before{content:'';width:28px;height:1px;background:rgba(255,255,255,0.12);margin:0 4px;transition:background var(--t-slow);}
+.ps-item.done+.ps-item::before{background:var(--green-500);}
+.ps-dot{width:22px;height:22px;border-radius:var(--r-full);background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,0.35);transition:all var(--t-slow);flex-shrink:0;}
+.ps-item.active .ps-dot{background:var(--blue-600);border-color:var(--blue-400);color:#fff;box-shadow:0 0 0 3px rgba(59,130,246,0.25);}
+.ps-item.done .ps-dot{background:var(--green-600);border-color:var(--green-500);color:#fff;}
+.ps-item.done .ps-dot::after{content:'✓';}
+.ps-item.done .ps-dot>span{display:none;}
+.ps-label{font-size:11px;font-weight:500;color:rgba(255,255,255,0.3);transition:color var(--t-base);white-space:nowrap;}
+.ps-item.active .ps-label{color:rgba(255,255,255,0.85);font-weight:600;}
+.ps-item.done .ps-label{color:var(--green-400);}
+.topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.badge{font-size:9px;font-weight:700;letter-spacing:1.2px;padding:3px 8px;border-radius:var(--r-full);text-transform:uppercase;}
+.badge-cp{background:rgba(59,130,246,0.2);color:#93C5FD;border:1px solid rgba(59,130,246,0.3);}
+.badge-fito{background:rgba(34,197,94,0.2);color:#86EFAC;border:1px solid rgba(34,197,94,0.3);}
+.badge-uni{background:rgba(168,85,247,0.2);color:#D8B4FE;border:1px solid rgba(168,85,247,0.3);}
+.badge-ver{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.1);}
 
-/* Pulse Bar — Fase 1 del rediseño "Centro de Operaciones".
-   Reemplaza al antiguo Health Rail (4 pills) — ver
-   src/ui/pulse-bar.js para la lógica de render. Única fuente de
-   verdad de "¿cómo va el día?" en el topbar. */
-.pulse-bar {
-  display: flex; flex-direction: column; justify-content: center; gap: 3px;
-  background: rgba(255,255,255,.07);
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 8px; padding: 6px 14px;
-  min-width: 260px; cursor: pointer;
-  transition: background .15s;
-}
-.pulse-bar:hover { background: rgba(255,255,255,.12); }
-.pulse-track {
-  width: 100%; height: 4px; border-radius: 4px;
-  background: rgba(255,255,255,.15); overflow: hidden;
-}
-.pulse-fill {
-  height: 100%; width: 0%; border-radius: 4px;
-  background: var(--text4); transition: width .3s ease, background .2s;
-}
-.pulse-bar.idle .pulse-fill { background: rgba(255,255,255,.25); }
-.pulse-bar.ok   .pulse-fill { background: #34D399; }
-.pulse-bar.warn .pulse-fill { background: var(--amber); }
-.pulse-bar.crit .pulse-fill { background: #F87171; }
-.pulse-text {
-  font-family: 'JetBrains Mono', monospace; font-size: 10px;
-  color: rgba(255,255,255,.65); white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-}
-.pulse-bar.crit .pulse-text { color: #FCA5A5; }
-.pulse-bar.warn .pulse-text { color: var(--amber-bd); }
+/* ── SIDEBAR ───────────────────────────── */
+.sidebar{grid-area:sidebar;background:var(--surface-0);border-right:1px solid var(--color-border);position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;display:flex;flex-direction:column;padding:20px 0 24px;}
+.sidebar-section{padding:0 14px;margin-bottom:4px;}
+.sidebar-label{font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--color-text-3);padding:0 8px;margin-bottom:6px;margin-top:16px;display:block;}
+.sidebar-label:first-child{margin-top:0;}
+.pdf-status{margin:0 14px 16px;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--color-border);background:var(--surface-1);}
+.pdf-status-empty{padding:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:background var(--t-fast);min-height:80px;text-align:center;}
+.pdf-status-empty:hover{background:var(--blue-50);}
+.pdf-status-empty .upload-icon{width:32px;height:32px;border-radius:var(--r-sm);background:var(--blue-100);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.pdf-status-empty p{font-size:11px;font-weight:600;color:var(--blue-600);}
+.pdf-status-empty span{font-size:10px;color:var(--color-text-3);}
+.pdf-status-loaded{display:none;padding:12px 14px;gap:10px;}
+.pdf-loaded-icon{width:30px;height:30px;border-radius:var(--r-sm);background:var(--red-50);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.pdf-loaded-info{flex:1;min-width:0;}
+.pdf-loaded-name{font-size:11px;font-weight:600;color:var(--color-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pdf-loaded-meta{font-size:10px;color:var(--color-text-2);margin-top:1px;}
+.pdf-loaded-change{font-size:10px;font-weight:600;color:var(--blue-600);cursor:pointer;white-space:nowrap;background:none;border:none;padding:0;font-family:var(--font);}
+.pdf-loaded-change:hover{text-decoration:underline;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 14px;margin-bottom:12px;}
+.stat-chip{background:var(--surface-1);border:1px solid var(--color-border);border-radius:var(--r-sm);padding:8px 10px;display:flex;flex-direction:column;gap:2px;transition:all var(--t-fast);}
+.stat-chip-value{font-size:18px;font-weight:800;letter-spacing:-0.5px;line-height:1;color:var(--gray-300);transition:color var(--t-base);}
+.stat-chip-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-3);}
+.stat-chip.has-value{border-color:transparent;box-shadow:var(--shadow-sm);}
+.stat-chip.cp-chip.has-value{background:var(--blue-50);border-color:var(--blue-100);}
+.stat-chip.fito-chip.has-value{background:var(--green-50);border-color:var(--green-100);}
+.stat-chip.uni-chip.has-value{background:var(--purple-50);border-color:var(--purple-100);}
+.stat-chip.total-chip.has-value{background:var(--amber-50);border-color:var(--amber-200);}
+.stat-chip.cp-chip.has-value .stat-chip-value{color:var(--blue-600);}
+.stat-chip.fito-chip.has-value .stat-chip-value{color:var(--green-600);}
+.stat-chip.uni-chip.has-value .stat-chip-value{color:var(--purple-600);}
+.stat-chip.total-chip.has-value .stat-chip-value{color:var(--amber-600);}
+.page-match{margin:0 14px 12px;border-radius:var(--r-sm);padding:8px 10px;font-size:10px;font-weight:500;display:none;}
+.page-match.ok{background:var(--green-50);color:var(--green-700);border:1px solid var(--green-200);display:flex;align-items:center;gap:5px;}
+.page-match.warn{background:var(--amber-50);color:var(--amber-600);border:1px solid var(--amber-200);display:block;}
+.page-match.error-s{background:var(--red-50);color:var(--red-600);border:1px solid var(--red-100);display:block;}
+.page-match strong{font-weight:700;}
+.sidebar-cta{margin:0 14px;margin-top:auto;display:flex;flex-direction:column;gap:8px;}
+.btn-primary{display:flex;align-items:center;justify-content:center;gap:7px;background:var(--blue-600);color:#fff;border:none;border-radius:var(--r-md);padding:11px 16px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;transition:background var(--t-fast),transform var(--t-fast),box-shadow var(--t-fast),opacity var(--t-fast);width:100%;box-shadow:0 1px 3px rgba(37,99,235,0.35),0 0 0 1px rgba(37,99,235,0.15);position:relative;overflow:hidden;}
+.btn-primary::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,255,255,0.08),transparent);pointer-events:none;}
+.btn-primary:hover:not(:disabled){background:var(--blue-700);transform:translateY(-1px);box-shadow:0 4px 10px rgba(37,99,235,0.40),0 0 0 1px rgba(37,99,235,0.2);}
+.btn-primary:active:not(:disabled){transform:translateY(0);}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-yellow{display:flex;align-items:center;justify-content:center;gap:7px;background:var(--yellow-400);color:var(--gray-900);border:none;border-radius:var(--r-md);padding:11px 16px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all var(--t-fast);width:100%;box-shadow:0 1px 3px rgba(245,158,11,0.30);}
+.btn-yellow:hover:not(:disabled){background:var(--yellow-500);transform:translateY(-1px);}
+.btn-yellow:disabled{opacity:0.4;cursor:not-allowed;}
+.split-progress{display:none;}
+.split-progress.show{display:block;}
+.sp-label{font-size:11px;font-weight:600;color:var(--color-text-2);margin-bottom:6px;display:flex;justify-content:space-between;}
+.sp-track{height:4px;background:var(--color-border);border-radius:var(--r-full);overflow:hidden;}
+.sp-fill{height:100%;border-radius:var(--r-full);background:linear-gradient(90deg,var(--blue-500),var(--blue-400));transition:width 200ms ease;width:0%;}
 
-/* Topbar responsive */
-@media (max-width: 1200px) {
-  .pulse-bar { min-width: 200px; }
-  .tb-context { display: none; }
-}
-@media (max-width: 900px) {
-  .pulse-bar { display: none; }
-}
+/* ── MAIN ──────────────────────────────── */
+.main{grid-area:main;padding:24px 28px 60px;max-width:820px;overflow-y:auto;}
 
-/* User chip */
-.tb-user {
-  display: flex; align-items: center; gap: 7px;
-  background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.12);
-  border-radius: 8px; padding: 4px 10px; cursor: pointer;
-  transition: background .15s;
-}
-.tb-user:hover { background: rgba(255,255,255,.15); }
-.tb-user-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,.4); letter-spacing: .06em; text-transform: uppercase; }
-.tb-user-name { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.8); }
-.tb-theme-btn {
-  background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.12);
-  border-radius: 8px; padding: 5px 9px; font-size: 14px; color: #fff;
-  transition: background .15s; flex-shrink: 0;
-}
-.tb-theme-btn:hover { background: rgba(255,255,255,.18); }
+/* ── PANELS ────────────────────────────── */
+.panel{background:var(--surface-0);border:1px solid var(--color-border);border-radius:var(--r-xl);margin-bottom:16px;overflow:hidden;transition:box-shadow var(--t-base),opacity var(--t-slow);box-shadow:var(--shadow-xs);}
+.panel.locked{opacity:0.5;pointer-events:none;}
+.panel:focus-within{box-shadow:var(--shadow-md);}
+.panel-header{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--color-border);background:var(--surface-0);}
+.panel-step-badge{width:28px;height:28px;border-radius:var(--r-full);background:var(--blue-600);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;}
+.panel.done-panel .panel-step-badge{background:var(--green-600);}
+.panel.done-panel .panel-step-badge::after{content:'✓';}
+.panel.done-panel .panel-step-badge>span{display:none;}
+.panel-title-block{flex:1;}
+.panel-title{font-size:14px;font-weight:700;color:var(--color-text);line-height:1.2;}
+.panel-desc{font-size:11px;color:var(--color-text-3);margin-top:2px;}
+.panel-body{padding:20px;}
+.panel-body+.panel-body{border-top:1px solid var(--color-border);}
+.panel-toggle{width:24px;height:24px;border-radius:var(--r-full);background:none;border:1px solid var(--color-border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text-3);font-size:10px;transition:all var(--t-fast);margin-left:auto;flex-shrink:0;font-family:var(--font);}
+.panel-toggle:hover{background:var(--surface-1);color:var(--color-text);}
+.panel-body-wrap{overflow:hidden;transition:max-height var(--t-slow);max-height:4000px;}
+.panel-body-wrap.collapsed{max-height:0;}
 
-/* ── LAYOUT ── */
-.app-shell { padding-top: 54px; min-height: 100vh; }
-.page { max-width: 1440px; margin: 0 auto; padding: 16px 20px 40px; }
+/* ── DROP ZONE ─────────────────────────── */
+.drop-zone{border:2px dashed var(--color-border);border-radius:var(--r-lg);padding:36px 24px;text-align:center;cursor:pointer;transition:all var(--t-base);background:var(--surface-1);}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--blue-400);background:var(--blue-50);}
+.dz-content{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.dz-upload-ring{width:52px;height:52px;border-radius:var(--r-full);background:var(--gray-100);border:2px solid var(--gray-200);display:flex;align-items:center;justify-content:center;transition:all var(--t-base);font-size:20px;}
+.drop-zone:hover .dz-upload-ring,.drop-zone.drag-over .dz-upload-ring{background:var(--blue-100);border-color:var(--blue-300);}
+.dz-title{font-size:13px;font-weight:600;color:var(--color-text);}
+.dz-sub{font-size:11px;color:var(--color-text-3);}
+.dz-btn{display:inline-flex;align-items:center;gap:5px;background:var(--surface-0);border:1px solid var(--color-border-2);border-radius:var(--r-sm);padding:6px 14px;font-size:11px;font-weight:600;color:var(--blue-600);cursor:pointer;transition:all var(--t-fast);margin-top:4px;font-family:var(--font);}
+.dz-btn:hover{background:var(--blue-50);border-color:var(--blue-300);}
+.dz-loaded{display:none;align-items:center;gap:12px;background:var(--green-50);border:1.5px solid var(--green-200);border-radius:var(--r-md);padding:12px 14px;margin-top:12px;}
+.dz-loaded.show{display:flex;}
+.dz-loaded-icon{font-size:20px;}
+.dz-loaded-info{flex:1;}
+.dz-loaded-name{font-size:12px;font-weight:700;color:var(--green-700);}
+.dz-loaded-pages{font-size:10px;color:var(--green-600);margin-top:1px;}
 
-/* ── PIPELINE STRIP ── */
-/* The three-step pipeline is the single source of workflow state */
-.pipeline {
-  display: grid; grid-template-columns: 1fr auto 1fr auto 1fr;
-  gap: 0; margin-bottom: 20px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-lg); overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-.pipe-step {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px 14px; position: relative;
-  transition: background .15s;
-  cursor: default;
-  min-width: 0;
-}
-@media (max-width: 700px) {
-  .pipe-desc, .pipe-stat { display: none; }
-  .pipe-step { padding: 10px 12px; }
-}
-.pipe-step.active   { background: var(--blue-bg); }
-.pipe-step.done     { background: var(--green-bg); }
-.pipe-step.optional { background: var(--surface); }
+/* ── CORRECTION MODULE ─────────────────── */
+.orient-banner{border-radius:var(--r-md);padding:12px 14px;margin-bottom:16px;display:none;}
+.orient-banner.scanning{background:var(--blue-50);border:1px solid var(--blue-100);display:block;}
+.orient-banner.ok{background:var(--green-50);border:1px solid var(--green-200);display:flex;align-items:center;gap:10px;}
+.orient-banner.warn{background:var(--amber-50);border:1px solid var(--amber-200);display:block;}
+.orient-banner-title{font-size:12px;font-weight:700;margin-bottom:2px;}
+.orient-banner.scanning .orient-banner-title{color:var(--blue-700);}
+.orient-banner.ok .orient-banner-title{color:var(--green-700);}
+.orient-banner.warn .orient-banner-title{color:var(--amber-700);}
+.orient-banner-sub{font-size:11px;color:var(--color-text-2);line-height:1.5;}
+.orient-banner.ok .orient-banner-sub{color:var(--green-600);}
+.orient-progress{height:3px;background:var(--blue-100);border-radius:var(--r-full);overflow:hidden;margin-top:10px;}
+.orient-progress-fill{height:100%;background:var(--blue-500);border-radius:var(--r-full);transition:width 150ms ease;width:0%;}
+.orient-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.btn-sm{display:inline-flex;align-items:center;gap:5px;border-radius:var(--r-sm);padding:6px 12px;font-size:11px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all var(--t-fast);border:1px solid transparent;white-space:nowrap;}
+.btn-sm-amber{background:var(--amber-500);color:#fff;border-color:var(--amber-600);}
+.btn-sm-amber:hover{background:var(--amber-600);}
+.btn-sm-outline{background:var(--surface-0);color:var(--color-text-2);border-color:var(--color-border-2);}
+.btn-sm-outline:hover{background:var(--surface-1);color:var(--color-text);}
+.btn-sm-ghost{background:none;color:var(--color-text-3);border-color:transparent;}
+.btn-sm-ghost:hover{color:var(--color-text-2);}
 
-.pipe-num {
-  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700;
-  background: var(--surface3); color: var(--text3);
-  border: 1.5px solid var(--border2);
-  transition: all .2s;
-}
-.pipe-step.active .pipe-num   { background: var(--blue); color: #fff; border-color: var(--blue); }
-.pipe-step.done .pipe-num     { background: var(--green); color: #fff; border-color: var(--green); }
-.pipe-step.optional .pipe-num { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-bd); }
+.rot-controls{display:flex;flex-direction:column;gap:14px;}
+.rot-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.rot-label{font-size:11px;font-weight:600;color:var(--color-text-2);min-width:130px;}
+.rot-btns{display:flex;gap:6px;}
+.rot-btn{width:34px;height:34px;border-radius:var(--r-sm);background:var(--surface-1);border:1px solid var(--color-border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all var(--t-fast);color:var(--color-text-2);}
+.rot-btn:hover{background:var(--blue-50);border-color:var(--blue-300);color:var(--blue-600);}
+.rot-btn.active{background:var(--blue-600);border-color:var(--blue-600);color:#fff;box-shadow:0 2px 6px rgba(37,99,235,0.35);}
+.rot-btn-reset{font-size:10px;font-weight:700;width:auto;padding:0 10px;}
 
-.pipe-info { flex: 1; min-width: 0; }
-.pipe-title { font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pipe-desc  { font-size: 10px; color: var(--text3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pipe-stat  { 
-  font-family: 'JetBrains Mono', monospace; font-size: 10px;
-  padding: 2px 8px; border-radius: 20px;
-  background: var(--surface3); color: var(--text3);
-  border: 1px solid var(--border); white-space: nowrap; flex-shrink: 0;
-}
-.pipe-step.done .pipe-stat   { background: var(--green-bg); color: var(--green); border-color: var(--green-bd); }
-.pipe-step.active .pipe-stat { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-bd); }
+.page-select{appearance:none;background:var(--surface-0);border:1px solid var(--color-border);border-radius:var(--r-sm);padding:6px 28px 6px 10px;font-size:12px;font-family:var(--font);color:var(--color-text);cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394A3B8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;min-width:120px;}
+.page-select:focus{outline:none;border-color:var(--blue-400);box-shadow:0 0 0 3px rgba(59,130,246,0.12);}
 
-.pipe-arrow {
-  display: flex; align-items: center; justify-content: center;
-  width: 32px; color: var(--border2); font-size: 18px; font-weight: 300;
-  background: var(--surface); flex-shrink: 0;
-  border-left: 1px solid var(--border); border-right: 1px solid var(--border);
-}
+/* Thumbnail strip */
+.thumb-strip-wrap{margin-top:16px;}
+.thumb-strip-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-3);margin-bottom:8px;}
+.thumb-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin;}
+.thumb-strip::-webkit-scrollbar{height:4px;}
+.thumb-strip::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:2px;}
+.thumb-item{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;position:relative;}
+.thumb-canvas-wrap{width:72px;height:96px;border-radius:var(--r-sm);overflow:hidden;border:2px solid var(--color-border);background:var(--surface-2);display:flex;align-items:center;justify-content:center;transition:all var(--t-fast);position:relative;}
+.thumb-item:hover .thumb-canvas-wrap{border-color:var(--blue-300);}
+.thumb-item.selected .thumb-canvas-wrap{border-color:var(--blue-500);box-shadow:0 0 0 2px rgba(59,130,246,0.25);}
+.thumb-item.has-warn .thumb-canvas-wrap{border-color:var(--amber-400);}
+.thumb-item.has-correction .thumb-canvas-wrap{border-color:var(--blue-400);}
+.thumb-canvas-wrap canvas{max-width:100%;max-height:100%;display:block;}
+.thumb-badge{position:absolute;top:3px;right:3px;background:var(--amber-500);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;line-height:1.4;}
+.thumb-badge.correction{background:var(--blue-600);}
+.thumb-num{font-size:9px;font-weight:600;color:var(--color-text-3);}
+.thumb-item.selected .thumb-num{color:var(--blue-600);}
+.thumb-item.has-warn .thumb-num{color:var(--amber-600);}
+.thumb-loading{display:flex;align-items:center;justify-content:center;width:72px;height:96px;background:var(--surface-2);border-radius:var(--r-sm);border:1px solid var(--color-border);}
+.thumb-spinner{width:16px;height:16px;border:2px solid var(--gray-200);border-top-color:var(--blue-400);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-/* ── MAIN GRID ── */
-.main-grid {
-  display: grid;
-  grid-template-columns: minmax(320px, 360px) minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
-}
-@media (max-width: 1100px) {
-  .main-grid { grid-template-columns: minmax(280px, 320px) minmax(0, 1fr); }
-}
-@media (max-width: 860px) {
-  .main-grid { grid-template-columns: 1fr; }
-}
+/* ── FORM ELEMENTS ─────────────────────── */
+.input-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-2);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.input-label .label-tag{font-size:9px;font-weight:600;background:var(--blue-100);color:var(--blue-700);padding:1px 5px;border-radius:3px;letter-spacing:0.5px;}
+.input-label .label-warn{font-size:9px;font-weight:600;background:var(--amber-100);color:var(--amber-700);padding:1px 5px;border-radius:3px;letter-spacing:0.5px;}
+textarea.input-field{width:100%;background:var(--surface-1);border:1px solid var(--color-border);border-radius:var(--r-md);color:var(--color-text);font-family:var(--font);font-size:12px;padding:10px 12px;resize:vertical;line-height:1.7;transition:all var(--t-fast);}
+textarea.input-field:focus{outline:none;border-color:var(--blue-400);background:var(--surface-0);box-shadow:0 0 0 3px rgba(59,130,246,0.12);}
+textarea.input-field::placeholder{color:var(--color-text-3);}
+textarea.auto-filled{background:var(--surface-0);border-color:var(--green-200);box-shadow:0 0 0 2px rgba(34,197,94,0.08);}
+.input-hint{font-size:10px;color:var(--color-text-3);margin-top:6px;line-height:1.5;}
+.detect-btn{display:inline-flex;align-items:center;gap:7px;background:var(--blue-50);border:1px solid var(--blue-200);border-radius:var(--r-sm);padding:8px 16px;font-size:12px;font-weight:700;color:var(--blue-600);font-family:var(--font);cursor:pointer;transition:all var(--t-fast);margin-top:12px;}
+.detect-btn:hover:not(:disabled){background:var(--blue-100);border-color:var(--blue-300);}
+.detect-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.detect-result-bar{display:none;margin-top:12px;background:var(--green-50);border:1px solid var(--green-200);border-radius:var(--r-md);padding:10px 14px;}
+.detect-result-bar.show{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.drb-title{font-size:11px;font-weight:700;color:var(--green-700);}
+.drb-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.drb-chip{font-size:10px;font-weight:600;padding:3px 9px;border-radius:var(--r-full);}
+.drb-chip-green{background:var(--green-100);color:var(--green-700);border:1px solid var(--green-200);}
+.drb-chip-purple{background:var(--purple-100);color:var(--purple-700);border:1px solid var(--purple-100);}
+.drb-chip-warn{background:var(--amber-100);color:var(--amber-700);border:1px solid var(--amber-200);}
+.or-line{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--color-text-3);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.or-line::before,.or-line::after{content:'';flex:1;height:1px;background:var(--color-border);}
+.two-col-inputs{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.input-col-label-cp{color:var(--blue-600);}
+.input-col-label-fito{color:var(--green-600);}
+.textarea-route{height:120px;font-family:'Inter',monospace;}
+.callout{display:flex;gap:10px;background:var(--blue-50);border:1px solid var(--blue-100);border-radius:var(--r-md);padding:10px 12px;font-size:11px;color:var(--blue-900);line-height:1.6;margin-top:14px;}
+.callout-icon{flex-shrink:0;font-size:14px;}
 
-/* ── CARDS ── */
-.card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-lg); box-shadow: var(--shadow-sm);
-  overflow: hidden;
-}
-.card-hdr {
-  display: flex; align-items: center; gap: 10px;
-  padding: 13px 16px; border-bottom: 1px solid var(--border);
-}
-.card-hdr-icon { font-size: 16px; flex-shrink: 0; }
-.card-hdr-title { font-size: 13px; font-weight: 700; color: var(--text); }
-.card-hdr-desc  { font-size: 11px; color: var(--text3); margin-top: 1px; }
-.card-hdr-right { margin-left: auto; display: flex; gap: 6px; align-items: center; }
-.card-body { padding: 14px 16px; }
-.card-body-sm { padding: 10px 16px; }
+/* ── PREVIEW TABLE ─────────────────────── */
+.preview-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.preview-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-2);}
+.preview-count{font-size:10px;color:var(--color-text-3);}
+.table-scroll{border:1px solid var(--color-border);border-radius:var(--r-md);overflow:hidden;max-height:320px;overflow-y:auto;}
+table{width:100%;border-collapse:collapse;font-size:11.5px;}
+thead th{position:sticky;top:0;z-index:1;background:var(--gray-800);font-size:9.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.5);text-align:left;padding:9px 14px;}
+tbody tr{border-bottom:1px solid var(--color-border);transition:background var(--t-fast);}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--surface-1);}
+tbody td{padding:8px 14px;vertical-align:middle;}
+.td-num{width:36px;font-weight:600;color:var(--color-text-3);font-size:10px;text-align:center;}
+.td-page{width:80px;color:var(--color-text-3);font-size:10px;}
+.td-file{font-weight:600;}
+.td-file.cp{color:var(--blue-600);}
+.td-file.fito{color:var(--green-600);}
+.td-file.unified{color:var(--purple-600);}
+.row-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;letter-spacing:0.5px;padding:2px 7px;border-radius:var(--r-full);}
+.tag-cp{background:var(--blue-50);color:var(--blue-600);border:1px solid var(--blue-100);}
+.tag-fito{background:var(--green-50);color:var(--green-600);border:1px solid var(--green-100);}
+.tag-unified{background:var(--purple-50);color:var(--purple-600);border:1px solid var(--purple-100);}
+.tag-warn{background:var(--amber-50);color:var(--amber-600);border:1px solid var(--amber-200);}
+.alert-inline{display:none;margin-top:10px;border-radius:var(--r-md);padding:10px 14px;font-size:11px;line-height:1.6;}
+.alert-inline.warn{background:var(--amber-50);color:var(--amber-600);border:1px solid var(--amber-200);display:block;}
+.alert-inline.error-a{background:var(--red-50);color:var(--red-600);border:1px solid var(--red-100);display:block;}
+.preview-empty{text-align:center;padding:32px 20px;color:var(--color-text-3);display:flex;flex-direction:column;align-items:center;gap:8px;}
+.preview-empty .pe-icon{font-size:28px;opacity:0.4;}
+.preview-empty p{font-size:12px;}
 
-/* ── LEFT SIDEBAR — Input panel ── */
-.sidebar { grid-column: 1; display: flex; flex-direction: column; gap: 12px; }
+/* ── DOWNLOADS ─────────────────────────── */
+.download-panel{display:none;}
+.download-panel.show{display:block;}
+.dl-top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+.dl-summary-line{font-size:12px;color:var(--color-text-2);}
+.dl-summary-line strong{font-weight:700;color:var(--color-text);}
+.dl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;}
+.dl-item{background:var(--surface-0);border:1px solid var(--color-border);border-radius:var(--r-md);padding:10px 12px;display:flex;align-items:center;gap:10px;transition:box-shadow var(--t-fast),border-color var(--t-fast);animation:fadeSlideIn 250ms ease forwards;opacity:0;}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.dl-item:hover{box-shadow:var(--shadow-md);border-color:var(--color-border-2);}
+.dl-item.dl-cp{border-left:3px solid var(--blue-400);}
+.dl-item.dl-fito{border-left:3px solid var(--green-400);}
+.dl-item.dl-unified{border-left:3px solid var(--purple-400);}
+.dl-file-icon{font-size:18px;flex-shrink:0;}
+.dl-info{flex:1;min-width:0;}
+.dl-name{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dl-name.cp{color:var(--blue-600);}
+.dl-name.fito{color:var(--green-600);}
+.dl-name.unified{color:var(--purple-600);}
+.dl-meta{font-size:9.5px;color:var(--color-text-3);margin-top:1px;}
+.dl-btn-link{background:none;border:1px solid var(--color-border);border-radius:var(--r-sm);padding:5px 10px;font-size:10.5px;font-weight:600;color:var(--blue-600);cursor:pointer;white-space:nowrap;text-decoration:none;transition:all var(--t-fast);font-family:var(--font);display:inline-block;}
+.dl-btn-link:hover{background:var(--blue-50);border-color:var(--blue-300);}
 
-/* ── DROP ZONES ── */
-.dz {
-  border: 2px dashed var(--border2); border-radius: var(--r);
-  padding: 20px 14px; text-align: center;
-  cursor: pointer; transition: all .18s; position: relative;
-  background: var(--surface2);
-}
-.dz:hover, .dz.drag { border-color: var(--blue); background: var(--blue-bg); }
-.dz.done { border-style: solid; border-color: var(--green-bd); background: var(--green-bg); }
-.dz.done:hover { border-color: var(--green); background: var(--green-bg); }
-.dz input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.dz-ico { font-size: 24px; margin-bottom: 6px; display: block; }
-.dz-text { font-size: 12px; font-weight: 600; color: var(--text2); }
-.dz-text strong { color: var(--blue); }
-.dz.done .dz-text strong { color: var(--green); }
-.dz-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.dz-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-family: 'JetBrains Mono', monospace; font-size: 10px;
-  margin-top: 8px; padding: 2px 10px; border-radius: 20px;
-  background: var(--surface3); color: var(--text3);
-  border: 1px solid var(--border); transition: all .2s;
-}
-.dz.done .dz-badge { background: var(--green-bg); color: var(--green); border-color: var(--green-bd); }
+/* ── SUCCESS BANNER ────────────────────── */
+.success-banner{display:none;background:var(--green-50);border:1px solid var(--green-200);border-radius:var(--r-xl);padding:20px;margin-bottom:16px;align-items:center;gap:14px;}
+.success-banner.show{display:flex;animation:fadeSlideIn 350ms ease forwards;}
+.success-banner-icon{width:44px;height:44px;border-radius:var(--r-full);background:var(--green-600);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.success-banner-text{flex:1;}
+.success-banner-title{font-size:14px;font-weight:700;color:var(--green-700);}
+.success-banner-sub{font-size:11px;color:var(--green-600);margin-top:2px;}
 
-/* ── PASTE PANEL ── */
-.paste-cols {
-  display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;
-}
-.pcol {
-  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600;
-  padding: 2px 7px; border-radius: 4px;
-}
-.pcol-key { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-bd); }
-.pcol-val { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-bd); }
+/* ── TOAST ─────────────────────────────── */
+#toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999;}
+.toast{display:flex;align-items:flex-start;gap:10px;background:var(--gray-900);border:1px solid rgba(255,255,255,0.06);border-radius:var(--r-md);padding:12px 14px;min-width:260px;max-width:340px;box-shadow:var(--shadow-xl);animation:toastIn 220ms cubic-bezier(0.4,0,0.2,1) forwards;cursor:pointer;}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+@keyframes toastOut{to{opacity:0;transform:translateX(20px);height:0;padding:0;margin:0;}}
+.toast.hiding{animation:toastOut 200ms ease forwards;}
+.toast-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
+.toast-body{flex:1;}
+.toast-msg{font-size:12px;font-weight:600;color:#fff;line-height:1.4;}
+.toast-sub{font-size:10.5px;color:rgba(255,255,255,0.45);margin-top:1px;}
+.toast.success{border-left:3px solid var(--green-500);}
+.toast.error{border-left:3px solid var(--red-500);}
+.toast.warning{border-left:3px solid var(--yellow-400);}
+.toast.info{border-left:3px solid var(--blue-400);}
 
-.paste-ta {
-  width: 100%; background: var(--surface2); border: 1.5px solid var(--border2);
-  border-radius: var(--r); color: var(--text);
-  font-family: 'JetBrains Mono', monospace; font-size: 11px;
-  padding: 9px 12px; resize: vertical; min-height: 72px;
-  outline: none; transition: border-color .15s, box-shadow .15s;
-  line-height: 1.6; display: block;
-}
-.paste-ta:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-bg); }
-.paste-ta::placeholder { color: var(--text4); }
-.paste-actions { display: flex; gap: 7px; margin-top: 8px; }
-.paste-status { font-family: 'JetBrains Mono', monospace; font-size: 10px; margin-top: 6px; min-height: 14px; }
-.paste-status.ok   { color: var(--green); }
-.paste-status.err  { color: var(--red); }
-.paste-status.proc { color: var(--amber-dk); }
+/* ── SCROLLBAR ─────────────────────────── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--gray-300);}
 
-.paste-preview { margin-top: 8px; overflow-x: auto; max-height: 90px; border: 1px solid var(--border); border-radius: var(--r); display: none; }
-.paste-preview.on { display: block; }
-.paste-preview table { font-family: 'JetBrains Mono', monospace; font-size: 9px; border-collapse: collapse; width: 100%; }
-.paste-preview th { background: var(--surface2); color: var(--purple); padding: 5px 10px; text-align: left; position: sticky; top: 0; border-bottom: 1px solid var(--border); }
-.paste-preview td { padding: 4px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-
-/* ── BUTTONS ── */
-.btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 12px; font-weight: 600; border: none; border-radius: var(--r);
-  padding: 8px 16px; cursor: pointer; transition: all .15s; white-space: nowrap;
-  line-height: 1;
+/* ── RESPONSIVE ────────────────────────── */
+@media(max-width:768px){
+  .app{grid-template-columns:1fr;grid-template-areas:"topbar""main";}
+  .sidebar{display:none;}
+  .topbar-logo{width:auto;border-right:none;}
+  .main{padding:16px 14px 80px;max-width:100%;}
+  .progress-steps{display:none;}
+  .two-col-inputs{grid-template-columns:1fr;}
+  .mobile-fab{display:flex !important;}
 }
-.btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.07); }
-.btn:active:not(:disabled) { transform: none; filter: brightness(.97); }
-.btn:disabled { opacity: .35; cursor: not-allowed; transform: none !important; }
-.btn-primary   { background: var(--blue); color: #fff; }
-.btn-success   { background: var(--green); color: #fff; }
-.btn-amber     { background: var(--amber); color: #1A0A00; font-weight: 700; }
-.btn-ghost     { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
-.btn-ghost:hover:not(:disabled) { background: var(--surface3); }
-.btn-danger    { background: var(--red); color: #fff; }
-.btn-danger-outline { background: transparent; color: var(--red); border: 1px solid var(--red); }
-.btn-sm { padding: 5px 11px; font-size: 11px; }
-.btn-xs { padding: 3px 8px; font-size: 10px; }
-
-/* ── RIGHT PANEL ── */
-.right-panel { grid-column: 2; display: flex; flex-direction: column; gap: 14px; }
-@media (max-width: 960px) { .right-panel { grid-column: 1; } }
-
-/* ── PROGRESS BAR ── */
-.prog-bar { display: none; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--navy); }
-.prog-bar.on { display: block; }
-.prog-bar-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
-.prog-bar-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,.6); }
-.prog-bar-pct   { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: var(--amber); }
-.prog-track { height: 4px; background: rgba(255,255,255,.15); border-radius: 4px; overflow: hidden; }
-.prog-fill  { height: 100%; width: 0; background: var(--amber); border-radius: 4px; transition: width .2s; }
-
-/* ── ERR LOG ── */
-.err-log { display: none; }
-.err-log.on { display: block; }
-.err-log-inner {
-  margin: 0 16px 12px; padding: 10px 12px; border-radius: var(--r);
-  background: var(--red-bg); border: 1px solid var(--red-bd);
-  font-family: 'JetBrains Mono', monospace; font-size: 10px;
-  color: var(--red); max-height: 60px; overflow-y: auto; line-height: 1.7;
-}
-
-/* ── TABLE ── */
-.legend-row {
-  display: none; align-items: center; gap: 12px;
-  padding: 8px 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap;
-}
-.legend-row.on { display: flex; }
-.leg-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text4); }
-.leg { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text3); }
-.leg-dot { width: 7px; height: 7px; border-radius: 2px; }
-.table-wrap { overflow-x: auto; max-height: min(480px, calc(100vh - 420px)); overflow-y: auto; }
-.data-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-.data-table thead tr { background: var(--navy); position: sticky; top: 0; z-index: 2; }
-[data-theme="dark"] .data-table thead tr { background: #030810; }
-.data-table th {
-  font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .07em;
-  text-transform: uppercase; padding: 8px 10px; text-align: left;
-  white-space: nowrap; color: rgba(255,255,255,.4); font-weight: 500;
-}
-.data-table th.h-key  { color: var(--amber); }
-.data-table th.h-pdf  { color: #6EE7B7; }
-.data-table th.h-desp { color: #C4B5FD; }
-.data-table th.h-fill { color: #93C5FD; }
-.data-table tbody tr:nth-child(even) { background: var(--surface2); }
-.data-table tbody tr:hover { background: var(--blue-bg); }
-.data-table td {
-  padding: 5px 10px; border-bottom: 1px solid var(--border);
-  vertical-align: middle; white-space: nowrap;
-  font-family: 'JetBrains Mono', monospace;
-}
-.c-key  { color: var(--amber-dk); font-weight: 700; }
-.c-pdf  { color: var(--green); font-weight: 500; }
-.c-desp { color: var(--purple); font-weight: 500; }
-.c-fill { color: var(--blue); font-weight: 500; }
-.no-data { color: var(--border2); font-style: italic; font-size: 10px; }
-
-/* ── EMPTY STATE ── */
-.empty-state {
-  text-align: center; padding: 52px 24px;
-}
-.empty-ico   { font-size: 36px; opacity: .2; margin-bottom: 12px; }
-.empty-title { font-size: 14px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
-.empty-desc  { font-size: 12px; color: var(--text3); line-height: 1.6; max-width: 300px; margin: 0 auto; }
-
-/* ── ACTION BAR ── */
-.action-bar {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-}
-.action-bar-sep { width: 1px; height: 22px; background: var(--border); }
-.count-badge {
-  font-family: 'JetBrains Mono', monospace; font-size: 10px;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 20px; padding: 3px 10px; color: var(--text3);
-}
-.count-badge strong { color: var(--text); }
-.count-badge.ok strong   { color: var(--green); }
-.count-badge.warn strong { color: var(--orange); }
-.count-badge.info strong { color: var(--purple); }
-
-/* ── SVE (Smart Validation Engine) ── */
-.sve-panel { display: none; }
-.sve-panel.on { display: block; }
-
-/* Contadores ocultos — Fase 1 del rediseño. El shield/ring/contadores
-   visuales del header SVE se retiraron (la PulseBar del topbar ya
-   resume esto), PERO sveCrit/sveWarn/sveInfo/svePass SIGUEN en el DOM
-   porque events.js (handleForceExport) y warn-modal.js
-   (show/exportAnyway) leen su textContent directamente. No se tocan
-   esos módulos en esta fase — ver Fase 1, riesgo #3. */
-.sve-counters-hidden { display: none; }
-
-/* Alert groups */
-.sve-group { border-top: 1px solid var(--border); }
-.sve-group-hdr {
-  display: flex; align-items: center; gap: 10px; padding: 10px 18px;
-  cursor: pointer; user-select: none; transition: background .12s;
-}
-.sve-group-hdr:hover { background: var(--surface2); }
-.sev-tag {
-  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
-  padding: 2px 8px; border-radius: 20px; letter-spacing: .06em; text-transform: uppercase;
-  flex-shrink: 0;
-}
-.sev-crit .sev-tag { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-bd); }
-.sev-warn .sev-tag { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-bd); }
-.sev-info .sev-tag { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-bd); }
-.sve-group-name  { font-size: 11px; font-weight: 600; color: var(--text); flex: 1; }
-.sve-group-count { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text3); background: var(--surface3); border: 1px solid var(--border); border-radius: 20px; padding: 2px 8px; }
-.sve-group-chev  { font-size: 11px; color: var(--text3); transition: transform .2s; }
-.sve-group.open .sve-group-chev { transform: rotate(180deg); }
-.sve-group-body  { display: none; border-top: 1px solid var(--border); }
-.sve-group.open .sve-group-body { display: block; }
-
-.sve-issue {
-  display: grid; grid-template-columns: 22px 1fr; gap: 8px 10px;
-  padding: 9px 18px; border-bottom: 1px solid var(--border); align-items: start;
-  transition: background .1s;
-}
-.sve-issue:last-child { border-bottom: none; }
-.sve-issue:hover { background: var(--surface2); }
-.sve-issue-ico  { font-size: 13px; padding-top: 1px; }
-.sve-issue-desc { font-size: 11px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
-.sve-issue-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.sve-tag-ruta   { font-family: 'JetBrains Mono', monospace; font-size: 9px; background: var(--surface3); color: var(--text2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
-.sve-tag-field  { font-family: 'JetBrains Mono', monospace; font-size: 9px; border-radius: 4px; padding: 1px 6px; }
-.sev-crit .sve-tag-field { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-bd); }
-.sev-warn .sve-tag-field { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-bd); }
-.sev-info .sve-tag-field { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-bd); }
-.sve-tag-extra  { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); }
-.sve-issue-action { font-size: 10px; color: var(--text3); font-style: italic; margin-top: 3px; }
-
-.sve-empty-msg {
-  text-align: center; padding: 24px; color: var(--text3);
-  font-size: 11px;
-}
-
-/* Export gate */
-.export-gate {
-  display: none; padding: 12px 18px;
-  align-items: center; gap: 12px; flex-wrap: wrap;
-  border-top: 1px solid var(--border);
-  background: var(--red-bg); border-radius: 0 0 var(--r-lg) var(--r-lg);
-}
-.export-gate.on  { display: flex; }
-.export-gate.forced { background: var(--orange-bg); }
-.gate-msg { flex: 1; min-width: 200px; }
-.gate-msg strong { display: block; font-size: 12px; font-weight: 700; color: var(--red); margin-bottom: 2px; }
-.export-gate.forced .gate-msg strong { color: var(--orange); }
-.gate-msg span { font-size: 11px; color: var(--text2); }
-
-/* ── CATALOG ── */
-.cat-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
-.cat-toggle {
-  display: flex; align-items: center; gap: 10px; padding: 13px 16px;
-  cursor: pointer; user-select: none; transition: background .12s;
-}
-.cat-toggle:hover { background: var(--surface2); }
-.cat-badge-count {
-  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600;
-  background: var(--green-bg); color: var(--green); border: 1px solid var(--green-bd);
-  border-radius: 20px; padding: 2px 9px; margin-left: auto;
-   .cat-badge-count.warn { background: var(--orange-bg); color: var(--orange); border-color: var(--orange-bd); }
-.cat-badge-count.err  { background: var(--red-bg);    color: var(--red);    border-color: var(--red-bd); }
-.cat-badge-count.idle { background: var(--surface3);   color: var(--text3); border-color: var(--border); }
-}
-.cat-chev { font-size: 11px; color: var(--text3); transition: transform .2s; }
-.cat-panel.open .cat-chev { transform: rotate(180deg); }
-.cat-body { display: none; border-top: 1px solid var(--border); padding: 14px 16px; }
-.cat-panel.open .cat-body { display: block; }
-.cat-add-row { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
-.cat-input {
-  background: var(--surface2); border: 1.5px solid var(--border2); border-radius: var(--r);
-  color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 11px;
-  padding: 6px 10px; outline: none; transition: border-color .15s;
-}
-.cat-input:focus { border-color: var(--blue); }
-.cat-input::placeholder { color: var(--text4); }
-.cat-actions { display: flex; gap: 6px; margin-left: auto; align-items: center; }
-.cat-import-btn { position: relative; overflow: hidden; }
-.cat-import-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-.cat-table-wrap { max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--r); }
-.cat-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-.cat-table th { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .07em; text-transform: uppercase; padding: 6px 12px; text-align: left; background: var(--surface2); color: var(--text3); position: sticky; top: 0; border-bottom: 1px solid var(--border); }
-.cat-table td { padding: 5px 12px; border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; }
-.cat-table tr:last-child td { border-bottom: none; }
-.cat-table tr:hover td { background: var(--surface2); }
-.td-op  { color: var(--text2); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.td-lic { color: var(--green); font-weight: 600; }
-.btn-del { background: none; border: none; cursor: pointer; color: var(--text4); font-size: 12px; padding: 2px 5px; border-radius: 4px; transition: color .15s; }
-.btn-del:hover { color: var(--red); }
-.cat-empty { text-align: center; padding: 20px; color: var(--text3); font-size: 11px; font-family: 'JetBrains Mono', monospace; }
-.cat-status { font-family: 'JetBrains Mono', monospace; font-size: 10px; margin-top: 8px; }
-.cat-status.ok  { color: var(--green); }
-.cat-status.err { color: var(--red); }
-
-/* ── MODAL ── */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,10,30,.7);
-  backdrop-filter: blur(6px); z-index: 200;
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-}
-.modal-overlay.hidden { display: none; }
-.modal-box {
-  background: var(--surface); border-radius: var(--r-xl);
-  padding: 32px 36px; width: 400px; max-width: 100%;
-  box-shadow: var(--shadow-lg); border: 1px solid var(--border);
-}
-.modal-logo { display: flex; align-items: center; gap: 9px; margin-bottom: 22px; }
-.modal-logo-mark {
-  width: 36px; height: 36px; background: var(--amber); border-radius: 8px;
-  display: flex; align-items: center; justify-content: center; font-size: 18px;
-}
-.modal-logo-text { font-size: 14px; font-weight: 700; color: var(--text); }
-.modal-logo-text span { color: var(--amber-dk); }
-.modal-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
-.modal-sub   { font-size: 12px; color: var(--text3); margin-bottom: 20px; line-height: 1.6; }
-.modal-field-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); margin-bottom: 5px; }
-.modal-input {
-  width: 100%; background: var(--surface2); border: 1.5px solid var(--border2);
-  border-radius: var(--r); color: var(--text); font-family: 'Inter', sans-serif;
-  font-size: 14px; padding: 10px 14px; outline: none; transition: all .15s; margin-bottom: 4px;
-}
-.modal-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-bg); }
-.modal-input::placeholder { color: var(--text4); }
-.modal-hint { font-size: 11px; color: var(--text3); margin-bottom: 18px; }
-.theme-opts { display: flex; gap: 8px; margin-bottom: 18px; }
-.theme-opt {
-  flex: 1; border: 2px solid var(--border2); border-radius: var(--r);
-  padding: 12px 8px; text-align: center; cursor: pointer; transition: all .15s;
-  background: var(--surface2);
-}
-.theme-opt:hover { border-color: var(--blue); }
-.theme-opt.selected { border-color: var(--blue); background: var(--blue-bg); }
-.theme-opt-ico   { font-size: 20px; margin-bottom: 4px; }
-.theme-opt-label { font-size: 11px; font-weight: 600; color: var(--text2); }
-.modal-btn { width: 100%; background: var(--navy); color: #fff; border: none; border-radius: var(--r); font-size: 14px; font-weight: 600; padding: 12px; cursor: pointer; transition: background .15s; }
-.modal-btn:hover { background: var(--navy-md); }
-.modal-skip { display: block; text-align: center; margin-top: 10px; font-size: 11px; color: var(--text3); background: none; border: none; cursor: pointer; text-decoration: underline; }
-
-/* ── INLINE EDIT SYSTEM ── */
-.row-highlight {
-  outline: 2px solid var(--amber) !important;
-  background: var(--amber-lt) !important;
-  animation: rowPulse .6s ease 2;
-}
-@keyframes rowPulse {
-  0%,100% { background: var(--amber-lt); }
-  50%      { background: #FEF08A; }
-}
-
-/* Edit drawer */
-.edit-drawer {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 150;
-  background: var(--surface); border-top: 2px solid var(--amber);
-  box-shadow: 0 -8px 40px rgba(0,20,60,.18);
-  transform: translateY(100%); transition: transform .3s cubic-bezier(.4,0,.2,1);
-  max-height: 75vh; display: flex; flex-direction: column;
-}
-.edit-drawer.open { transform: translateY(0); }
-.edit-drawer-hdr {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 20px; border-bottom: 1px solid var(--border);
-  background: var(--surface); flex-shrink: 0;
-}
-.edit-drawer-title { font-size: 13px; font-weight: 700; color: var(--text); flex: 1; }
-.edit-drawer-ruta  { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--amber-dk); background: var(--amber-lt); border: 1px solid var(--amber-bd); border-radius: 6px; padding: 2px 10px; }
-.edit-drawer-body  { padding: 16px 20px; overflow-y: auto; flex: 1; }
-.edit-fields-grid  { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-.edit-field        { display: flex; flex-direction: column; gap: 4px; }
-.edit-field-label  { font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text3); }
-.edit-field-label.crit { color: var(--red); }
-.edit-field-input  {
-  background: var(--surface2); border: 1.5px solid var(--border2);
-  border-radius: var(--r); color: var(--text);
-  font-family: 'JetBrains Mono', monospace; font-size: 12px;
-  padding: 7px 10px; outline: none; transition: border-color .15s;
-}
-.edit-field-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-bg); }
-.edit-field-input.field-crit { border-color: var(--red-bd); background: var(--red-bg); }
-.edit-field-input.field-crit:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-bg); }
-.edit-drawer-ftr {
-  display: flex; align-items: center; gap: 10px; padding: 12px 20px;
-  border-top: 1px solid var(--border); background: var(--surface2); flex-shrink: 0;
-}
-.edit-change-badge {
-  font-family: 'JetBrains Mono', monospace; font-size: 10px;
-  background: var(--amber-lt); color: var(--amber-dk);
-  border: 1px solid var(--amber-bd); border-radius: 20px; padding: 2px 9px;
-}
-.btn-locate {
-  font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600;
-  background: var(--surface3); color: var(--text2); border: 1px solid var(--border);
-  border-radius: 6px; padding: 3px 9px; cursor: pointer; transition: all .15s;
-  white-space: nowrap;
-}
-.btn-locate:hover { background: var(--amber-lt); color: var(--amber-dk); border-color: var(--amber-bd); }
-
-/* ── SECTION LABEL ── */
-.sec-label {
-  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
-  letter-spacing: .14em; text-transform: uppercase; color: var(--text4);
-  margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
-}
-.sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-/* ── FULLWIDTH BOTTOM SECTION ── */
-.full-section { grid-column: 1 / -1; }
-
-/* ── EXPORT GATE — warn-only state ── */
-.export-gate.warn-only {
-  background: var(--amber-lt);
-  border-top-color: var(--amber-bd);
-}
-.export-gate.warn-only .gate-msg strong { color: var(--amber-dk); }
-
-/* ── WARN CONFIRM MODAL ── */
-.warn-modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,10,30,.55);
-  backdrop-filter: blur(4px); z-index: 300;
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-}
-.warn-modal-overlay.hidden { display: none; }
-.warn-modal-box {
-  background: var(--surface); border: 1px solid var(--amber-bd);
-  border-top: 3px solid var(--amber); border-radius: var(--r-xl);
-  box-shadow: var(--shadow-lg);
-  padding: 28px 32px; width: 420px; max-width: 100%;
-}
-.warn-modal-icon  { font-size: 28px; margin-bottom: 10px; }
-.warn-modal-title {
-  font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 6px;
-}
-.warn-modal-body  {
-  font-size: 12px; color: var(--text2); line-height: 1.65;
-  margin-bottom: 20px;
-}
-.warn-modal-body strong { color: var(--amber-dk); }
-.warn-modal-actions { display: flex; gap: 10px; }
-.warn-modal-actions .btn { flex: 1; justify-content: center; }
-
-/* ── ROUTE PICKER (multi-match selector for duplicate marchamo / ruta) ── */
-.route-picker-overlay {
-  position: fixed; inset: 0; background: rgba(0,10,30,.55);
-  backdrop-filter: blur(4px); z-index: 300;
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-}
-.route-picker-overlay.hidden { display: none; }
-.route-picker-box {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-xl); box-shadow: var(--shadow-lg);
-  padding: 24px 28px; min-width: 300px; max-width: 420px; width: 100%;
-}
-.route-picker-title {
-  font-size: 13px; font-weight: 700; color: var(--text);
-  margin-bottom: 4px;
-}
-.route-picker-sub {
-  font-size: 11px; color: var(--text3); margin-bottom: 16px; line-height: 1.5;
-}
-.route-picker-sep {
-  height: 1px; background: var(--border); margin-bottom: 12px;
-}
-.route-picker-options { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-.route-picker-opt {
-  display: flex; align-items: center; gap: 10px;
-  background: var(--surface2); border: 1.5px solid var(--border2);
-  border-radius: var(--r); padding: 9px 14px; cursor: pointer;
-  transition: all .15s; font-size: 12px; font-weight: 600; color: var(--text);
-  text-align: left;
-}
-.route-picker-opt:hover { border-color: var(--amber); background: var(--amber-lt); color: var(--amber-dk); }
-.route-picker-opt-ruta {
-  font-family: 'JetBrains Mono', monospace; font-size: 13px;
-  font-weight: 700; color: var(--blue);
-}
-.route-picker-opt-sub { font-size: 10px; color: var(--text3); font-weight: 400; margin-top: 1px; }
-.route-picker-cancel {
-  width: 100%; background: none; border: 1px solid var(--border2);
-  border-radius: var(--r); padding: 8px; font-size: 11px;
-  color: var(--text3); cursor: pointer; transition: all .15s;
-  font-family: inherit;
-}
-.route-picker-cancel:hover { background: var(--surface2); color: var(--text); }
-   /* ── TODAY BANNER — aviso de día operativo ya procesado ── */
-.today-banner {
-  display: flex; align-items: center; gap: 14px;
-  background: var(--green-bg); border: 1px solid var(--green-bd);
-  border-radius: var(--r-lg); padding: 12px 18px; margin-bottom: 16px;
-  box-shadow: var(--shadow-sm);
-}
-.today-banner.hidden { display: none; }
-.today-banner-icon { font-size: 22px; flex-shrink: 0; }
-.today-banner-text { flex: 1; min-width: 200px; font-size: 12px; color: var(--text2); }
-.today-banner-text strong { display: block; font-size: 13px; color: var(--green); margin-bottom: 2px; }
-.today-banner-actions { display: flex; gap: 8px; flex-shrink: 0; }
-
-/* ── HISTORY MODAL — historial de procesamientos ── */
-.history-modal-box {
-  width: 760px; max-width: 100%; max-height: 82vh;
-  overflow-y: auto; display: flex; flex-direction: column;
-}
-.history-modal-hdr { display: flex; align-items: center; margin-bottom: 16px; gap: 10px; }
-.history-modal-title { font-size: 15px; font-weight: 800; color: var(--text); }
+.mobile-fab{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:100;}
 </style>
 </head>
 <body>
+<div class="app">
 
-<!-- ── MODAL: Nombre + Tema ── -->
-<div class="modal-overlay hidden" id="nameModal">
-  <div class="modal-box">
-    <div class="modal-logo">
-      <div class="modal-logo-mark">🚛</div>
-      <div class="modal-logo-text"><span>Smart</span>Dispatch · CeDis VHSA</div>
-    </div>
-    <div class="modal-title" id="modalTitle">¡Bienvenido!</div>
-    <div class="modal-sub" id="modalSub">Configura tu sesión una sola vez. Esta información se guardará automáticamente.</div>
-    <div class="modal-field-label">Tu nombre</div>
-    <input class="modal-input" id="nameInput" type="text" placeholder="Ej. Eduardo García" maxlength="60" autocomplete="off">
-    <div class="modal-hint">Identifica quién realiza la captura en cada exportación.</div>
-    <div class="modal-field-label">Interfaz preferida</div>
-    <div class="theme-opts">
-      <div class="theme-opt selected" id="themeOptLight" data-theme="light">
-        <div class="theme-opt-ico">☀️</div>
-        <div class="theme-opt-label">Claro</div>
-      </div>
-      <div class="theme-opt" id="themeOptDark" data-theme="dark">
-        <div class="theme-opt-ico">🌙</div>
-        <div class="theme-opt-label">Oscuro</div>
-      </div>
-    </div>
-    <button class="modal-btn" id="nameModalBtn">Guardar y comenzar →</button>
-  </div>
-</div>
-
-<!-- ── TOPBAR ── -->
+<!-- ════ TOPBAR ════ -->
 <header class="topbar">
-  <div class="tb-logo">
-    <div class="tb-logo-mark">🚛</div>
-    <span class="tb-wordmark"><span>Smart</span>Dispatch</span>
+  <div class="topbar-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 44 44" fill="none">
+        <rect x="4" y="30" width="36" height="5" rx="2" fill="#0F172A"/>
+        <rect x="8" y="26" width="4" height="6" rx="1" fill="#0F172A"/>
+        <rect x="20" y="26" width="4" height="6" rx="1" fill="#0F172A"/>
+        <rect x="32" y="26" width="4" height="6" rx="1" fill="#0F172A"/>
+        <rect x="16" y="8" width="18" height="22" rx="2.5" fill="#1D4ED8"/>
+        <rect x="13" y="6" width="18" height="22" rx="2.5" fill="#2563EB"/>
+        <rect x="10" y="4" width="18" height="22" rx="2.5" fill="#FBBF24"/>
+        <rect x="13.5" y="9" width="11" height="1.8" rx="0.9" fill="#0F172A" opacity="0.3"/>
+        <rect x="13.5" y="13" width="8" height="1.8" rx="0.9" fill="#0F172A" opacity="0.3"/>
+        <rect x="13.5" y="17" width="10" height="1.8" rx="0.9" fill="#0F172A" opacity="0.3"/>
+        <path d="M19 27L22 31L25 27" stroke="#0F172A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <div class="logo-name">DispatchDock</div>
+      <div class="logo-sub">CEDIS Walmart</div>
+    </div>
   </div>
-  <div class="tb-divider"></div>
-  <span class="tb-context">CeDis VHSA · Perecederos</span>
-  <div class="tb-spacer"></div>
-
-  <!-- Pulse Bar — Fase 1 del rediseño "Centro de Operaciones".
-       Reemplaza al Health Rail anterior (4 pills separadas). Única
-       fuente de verdad de la salud del día. Ver src/ui/pulse-bar.js.
-       Alcance de esta fase: informativa + click-to-scroll al panel
-       SVE — todavía no filtra ni prioriza (eso llega con el Feed de
-       Atención en la Fase 3). -->
-  <div class="pulse-bar idle" id="pulseBar" title="Ver incidencias">
-    <div class="pulse-track"><div class="pulse-fill" id="pulseFill"></div></div>
-    <span class="pulse-text" id="pulseText">En espera</span>
+  <div class="topbar-center">
+    <nav class="progress-steps">
+      <div class="ps-item active" id="ps1"><div class="ps-dot"><span>1</span></div><div class="ps-label">Cargar PDF</div></div>
+      <div class="ps-item" id="ps2"><div class="ps-dot"><span>2</span></div><div class="ps-label">Corrección</div></div>
+      <div class="ps-item" id="ps3"><div class="ps-dot"><span>3</span></div><div class="ps-label">Configurar rutas</div></div>
+      <div class="ps-item" id="ps4"><div class="ps-dot"><span>4</span></div><div class="ps-label">Revisar</div></div>
+      <div class="ps-item" id="ps5"><div class="ps-dot"><span>5</span></div><div class="ps-label">Descargar</div></div>
+    </nav>
   </div>
-
-  <div class="tb-user" id="tbUser">
-    <span class="tb-user-label">Captura</span>
-    <span class="tb-user-name" id="tbUserName">—</span>
+  <div class="topbar-right">
+    <span class="badge badge-cp">CP</span>
+    <span class="badge badge-fito">FITO</span>
+    <span class="badge badge-uni">UNIF</span>
+    <span class="badge badge-ver">v1.0</span>
   </div>
-  <button class="tb-theme-btn" id="btnHistoryOpen" title="Historial de procesamientos">🗂️</button>
-  <button class="tb-theme-btn" id="btnTheme" title="Cambiar tema">🌙</button>
 </header>
 
-<!-- ── APP ── -->
-<div class="app-shell">
-<div class="page">
-
-  <!-- Aviso: día operativo ya procesado (Camino B, Fase 3) -->
-  <div class="today-banner hidden" id="todayBanner">
-    <div class="today-banner-icon">✅</div>
-    <div class="today-banner-text">
-      <strong>El día operativo de hoy ya fue procesado.</strong>
-      <span id="todayBannerInfo"></span>
+<!-- ════ SIDEBAR ════ -->
+<aside class="sidebar">
+  <span class="sidebar-label">Archivo cargado</span>
+  <div class="pdf-status">
+    <div class="pdf-status-empty" id="sb-pdf-empty" onclick="document.getElementById('file-input').click()">
+      <div class="upload-icon">📂</div>
+      <p>Cargar PDF</p>
+      <span>Haz clic para seleccionar</span>
     </div>
-    <div class="today-banner-actions">
-      <button class="btn btn-ghost btn-sm" id="btnTodayPreview">👁 Ver vista previa</button>
-      <button class="btn btn-amber btn-sm" id="btnTodayRedownload">⬇ Descargar de nuevo</button>
-    </div>
-  </div>
-
-  <!-- Pipeline status -->
-  <div class="pipeline" id="pipeline">
-    <div class="pipe-step active" id="pipeStep1">
-      <div class="pipe-num" id="pipeNum1">1</div>
-      <div class="pipe-info">
-        <div class="pipe-title">PDFs de cargas</div>
-        <div class="pipe-desc">Archivos del día</div>
+    <div class="pdf-status-loaded" id="sb-pdf-loaded" style="display:none">
+      <div class="pdf-loaded-icon">📄</div>
+      <div class="pdf-loaded-info">
+        <div class="pdf-loaded-name" id="sb-pdf-name">—</div>
+        <div class="pdf-loaded-meta" id="sb-pdf-meta">No hay PDF cargado</div>
       </div>
-      <span class="pipe-stat" id="pipeStat1">En espera</span>
-    </div>
-    <div class="pipe-arrow">›</div>
-    <div class="pipe-step" id="pipeStep2">
-      <div class="pipe-num" id="pipeNum2">2</div>
-      <div class="pipe-info">
-        <div class="pipe-title">Excel macro</div>
-        <div class="pipe-desc">RUTEO NUEVO + FACTURAS</div>
-      </div>
-      <span class="pipe-stat" id="pipeStat2">En espera</span>
-    </div>
-    <div class="pipe-arrow">›</div>
-    <div class="pipe-step optional" id="pipeStep3">
-      <div class="pipe-num" id="pipeNum3">·</div>
-      <div class="pipe-info">
-        <div class="pipe-title">Datos de despacho</div>
-        <div class="pipe-desc">Opcional · pega desde Excel</div>
-      </div>
-      <span class="pipe-stat" id="pipeStat3">Opcional</span>
+      <button class="pdf-loaded-change" onclick="document.getElementById('file-input').click()">Cambiar</button>
     </div>
   </div>
 
-  <!-- Main two-column layout -->
-  <div class="main-grid">
-
-    <!-- LEFT: Input sidebar -->
-    <div class="sidebar">
-
-      <!-- Step 1: PDFs -->
-      <div class="card">
-        <div class="card-hdr">
-          <span class="card-hdr-icon">📄</span>
-          <div>
-            <div class="card-hdr-title">PDFs de cargas</div>
-            <div class="card-hdr-desc">Todos los archivos del día</div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="dz" id="dropPDF">
-            <input type="file" id="filePDF" multiple accept=".pdf">
-            <span class="dz-ico">☁️</span>
-            <div class="dz-text"><strong>Arrastra los PDFs aquí</strong> o haz clic</div>
-            <div class="dz-sub">Todos los archivos del día a la vez</div>
-            <div class="dz-badge" id="pdfBadge">● 0 archivos</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 2: Excel -->
-      <div class="card">
-        <div class="card-hdr">
-          <span class="card-hdr-icon">📊</span>
-          <div>
-            <div class="card-hdr-title">Excel macro</div>
-            <div class="card-hdr-desc">RUTEO NUEVO · CONCENTRADO FACTURAS</div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="dz" id="dropXLS">
-            <input type="file" id="fileXLS" accept=".xlsx,.xls">
-            <span class="dz-ico">📊</span>
-            <div class="dz-text"><strong>Arrastra el Excel macro</strong> o haz clic</div>
-            <div class="dz-sub">Lee ambas pestañas automáticamente</div>
-            <div class="dz-badge" id="xlsBadge">● 0 rutas</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 3: Despacho paste -->
-      <div class="card">
-        <div class="card-hdr">
-          <span class="card-hdr-icon">📋</span>
-          <div>
-            <div class="card-hdr-title">Datos de despacho</div>
-            <div class="card-hdr-desc">Opcional — pega desde Excel</div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="paste-cols">
-            <span class="pcol pcol-key">RUTA</span>
-            <span class="pcol pcol-val">CASETA</span>
-            <span class="pcol pcol-val">WTMS</span>
-            <span class="pcol pcol-val">ID'S MASTER</span>
-          </div>
-          <textarea class="paste-ta" id="pasteArea"
-            placeholder="Ctrl+C en Excel → Ctrl+V aquí&#10;Columnas: RUTA · SALIDA CASETA · USUARIO WTMS · ID'S MASTER"></textarea>
-          <div class="paste-actions">
-            <button class="btn btn-primary btn-sm" id="btnParse">▶ Procesar</button>
-            <button class="btn btn-ghost btn-sm" id="btnPasteClear">✕ Limpiar</button>
-          </div>
-          <div class="paste-status" id="pasteSt"></div>
-          <div class="paste-preview" id="pastePreview">
-            <table><thead id="ppHead"></thead><tbody id="ppBody"></tbody></table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Catalog -->
-      <div class="cat-panel" id="catPanel">
-        <div class="cat-toggle" id="catToggle">
-          <span style="font-size:15px">🪪</span>
-          <div>
-            <div style="font-size:13px;font-weight:600;color:var(--text)">Catálogo de operadores</div>
-            <div style="font-size:11px;color:var(--text3)">Operador → Licencia · embebido</div>
-          </div>
-          <span class="cat-badge-count" id="catBadge">0 operadores</span>
-          <span class="cat-chev">▾</span>
-        </div>
-        <div class="cat-body">
-          <div class="cat-add-row">
-            <input class="cat-input" id="catOpInput" placeholder="Nombre operador (como aparece en PDF)" style="flex:2;min-width:160px">
-            <input class="cat-input" id="catLicInput" placeholder="Licencia" style="flex:1;min-width:90px">
-            <button class="btn btn-success btn-sm" id="btnCatAdd">+ Agregar</button>
-          <div class="cat-actions">
-  <div class="btn btn-ghost btn-sm cat-import-btn">
-    📥 Importar
-    <input type="file" id="catImportFile" accept=".xlsx,.xls">
+  <span class="sidebar-label">Resumen</span>
+  <div class="stats-grid">
+    <div class="stat-chip cp-chip" id="sc-cp"><div class="stat-chip-value" id="sc-cp-val">—</div><div class="stat-chip-label">Rutas CP</div></div>
+    <div class="stat-chip fito-chip" id="sc-fito"><div class="stat-chip-value" id="sc-fito-val">—</div><div class="stat-chip-label">Con FITO</div></div>
+    <div class="stat-chip uni-chip" id="sc-uni"><div class="stat-chip-value" id="sc-uni-val">—</div><div class="stat-chip-label">Unificadas</div></div>
+    <div class="stat-chip total-chip" id="sc-total"><div class="stat-chip-value" id="sc-total-val">—</div><div class="stat-chip-label">Pág. totales</div></div>
   </div>
-</div>
-          </div>
-          <div class="cat-table-wrap">
-            <table class="cat-table">
-              <thead><tr><th>Operador</th><th>Licencia</th><th></th></tr></thead>
-              <tbody id="catTbody"></tbody>
-            </table>
-          </div>
-          <div class="cat-status" id="catSt"></div>
-        </div>
-      </div>
 
-      <!-- Historial de Caché — diagnóstico del fact_cache -->
-      <div class="cat-panel" id="cacheHistPanel">
-        <div class="cat-toggle" id="cacheHistToggle">
-          <span style="font-size:15px">🗄️</span>
-          <div>
-            <div style="font-size:13px;font-weight:600;color:var(--text)">Historial de caché</div>
-            <div style="font-size:11px;color:var(--text3)">Facturas guardadas por día · diagnóstico</div>
-          </div>
-          <span class="cat-badge-count" id="cacheHistBadge">—</span>
-          <span class="cat-chev">▾</span>
-        </div>
-        <div class="cat-body">
-          <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.5">
-            Cargar el mismo día <strong>actualiza</strong> las facturas existentes y agrega
-            las nuevas — nunca borra los datos de otros días.
-          </div>
-          <div id="cacheHistList"></div>
-          <div style="margin-top:10px;text-align:right">
-            <button class="btn btn-danger-outline btn-sm" id="btnCacheHistClear">🗑 Limpiar caché histórico</button>
-          </div>
-        </div>
-      </div>
+  <div id="page-match" class="page-match"></div>
 
-    </div><!-- /sidebar -->
+  <div class="sidebar-cta">
+    <div class="split-progress" id="split-progress">
+      <div class="sp-label"><span id="sp-label-text">Procesando...</span><span id="sp-pct">0%</span></div>
+      <div class="sp-track"><div class="sp-fill" id="sp-fill"></div></div>
+    </div>
+    <button class="btn-primary" id="split-btn" onclick="splitPDF()" disabled>✂&nbsp; Dividir PDF</button>
+    <button class="btn-yellow" id="zip-btn" onclick="downloadZip()" style="display:none" disabled>🗜️&nbsp; Descargar todo como ZIP</button>
+  </div>
+</aside>
 
-    <!-- RIGHT: Results panel -->
-    <div class="right-panel">
+<!-- ════ MAIN ════ -->
+<main class="main">
+  <input type="file" id="file-input" accept="application/pdf" style="display:none">
 
-      <!-- Action bar -->
-      <div class="action-bar">
-        <button class="btn btn-amber" id="btnExport" disabled>⬇ Descargar Excel</button>
-        <button class="btn btn-ghost" id="btnAddPDF" disabled>+ Más PDFs</button>
-        <div class="action-bar-sep"></div>
-        <button class="btn btn-danger-outline btn-sm" id="btnClear" disabled>✕ Reiniciar</button>
-        <div class="action-bar-sep"></div>
-        <span class="count-badge">PDFs <strong id="bdgPDF">—</strong></span>
-        <span class="count-badge">Rutas <strong id="bdgXLS">—</strong></span>
-        <span class="count-badge ok">Match <strong id="bdgMatch">—</strong></span>
-        <span class="count-badge warn">Sin match <strong id="bdgNoMatch">—</strong></span>
-        <span class="count-badge info">Despacho <strong id="bdgDesp">0</strong></span>
-      </div>
-
-      <!-- SVE Panel -->
-      <div class="card sve-panel" id="svePanel">
-        <div class="sve-counters-hidden" aria-hidden="true">
-          <span id="sveCrit">0</span><span id="sveWarn">0</span><span id="sveInfo">0</span><span id="svePass">0</span>
-        </div>
-        <div id="sveAlerts">
-          <div class="sve-empty-msg">Sin incidencias detectadas — los datos lucen bien.</div>
-        </div>
-        <div class="export-gate" id="exportGate">
-          <div class="gate-msg">
-            <strong>⚠ Exportación bloqueada</strong>
-            <span>Existen errores críticos. Corrígelos antes de continuar, o acepta la responsabilidad.</span>
-          </div>
-          <button class="btn btn-danger-outline btn-sm" id="btnForceExport">Exportar de todas formas →</button>
-        </div>
-      </div>
-
-      <!-- Preview table -->
-      <div class="card">
-        <div class="card-hdr">
-          <div>
-            <div class="card-hdr-title">Vista previa del despacho</div>
-            <div class="card-hdr-desc" id="previewDesc">Carga los PDFs y el Excel macro para comenzar</div>
-          </div>
-          <div class="card-hdr-right">
-            <button class="btn btn-amber btn-sm" id="btnExport2" disabled>⬇ Descargar</button>
-          </div>
-        </div>
-        <div class="prog-bar" id="progBar">
-          <div class="prog-bar-top">
-            <span class="prog-bar-label" id="progLabel">Procesando…</span>
-            <span class="prog-bar-pct"   id="progPct">0%</span>
-          </div>
-          <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
-        </div>
-        <div class="err-log" id="errLog"><div class="err-log-inner" id="errLogInner"></div></div>
-        <div class="legend-row" id="legendRow">
-          <span class="leg-label">Fuente</span>
-          <div class="leg"><div class="leg-dot" style="background:var(--amber)"></div>RUTA</div>
-          <div class="leg"><div class="leg-dot" style="background:var(--blue)"></div>Ruteo</div>
-          <div class="leg"><div class="leg-dot" style="background:var(--green)"></div>PDF</div>
-          <div class="leg"><div class="leg-dot" style="background:var(--purple)"></div>Despacho</div>
-        </div>
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead><tr id="thead"></tr></thead>
-            <tbody id="tbody">
-              <tr><td colspan="20">
-                <div class="empty-state">
-                  <div class="empty-ico">📂</div>
-                  <div class="empty-title">Sin datos aún</div>
-                  <div class="empty-desc">Carga los PDFs y el Excel macro para comenzar el despacho</div>
-                </div>
-              </td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </div><!-- /right-panel -->
-  </div><!-- /main-grid -->
-</div><!-- /page -->
-</div><!-- /app-shell -->
-
-<!-- ── WARN CONFIRM MODAL ── -->
-<div class="warn-modal-overlay hidden" id="warnModalOverlay">
-  <div class="warn-modal-box">
-    <div class="warn-modal-icon">⚠️</div>
-    <div class="warn-modal-title" id="wmTitle">Hay advertencias pendientes</div>
-    <div class="warn-modal-body"  id="wmBody"></div>
-    <div class="warn-modal-actions">
-      <button class="btn btn-ghost" id="wmReview">🔍 Revisar advertencias</button>
-      <button class="btn btn-amber" id="wmExport">⬇ Exportar de todos modos</button>
+  <div class="success-banner" id="success-banner">
+    <div class="success-banner-icon">✅</div>
+    <div class="success-banner-text">
+      <div class="success-banner-title" id="success-title">¡Archivos listos!</div>
+      <div class="success-banner-sub" id="success-sub"></div>
     </div>
   </div>
+
+  <!-- PANEL 1: PDF -->
+  <div class="panel" id="panel-pdf">
+    <div class="panel-header">
+      <div class="panel-step-badge" id="p1-badge"><span>1</span></div>
+      <div class="panel-title-block">
+        <div class="panel-title">Cargar PDF escaneado</div>
+        <div class="panel-desc">Sube el archivo con todas las rutas del día</div>
+      </div>
+      <button class="panel-toggle" id="p1-toggle" onclick="togglePanel('p1')">▼</button>
+    </div>
+    <div class="panel-body-wrap" id="p1-body">
+      <div class="panel-body">
+        <div class="drop-zone" id="drop-zone">
+          <div class="dz-content">
+            <div class="dz-upload-ring">📂</div>
+            <div class="dz-title">Arrastra el PDF aquí</div>
+            <div class="dz-sub">Solo archivos <strong>.pdf</strong></div>
+            <button class="dz-btn" onclick="event.stopPropagation();document.getElementById('file-input').click()">Seleccionar archivo</button>
+          </div>
+        </div>
+        <div class="dz-loaded" id="dz-loaded">
+          <div class="dz-loaded-icon">📄</div>
+          <div class="dz-loaded-info">
+            <div class="dz-loaded-name" id="dz-loaded-name"></div>
+            <div class="dz-loaded-pages" id="dz-loaded-pages"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 2: CORRECTION -->
+  <div class="panel locked" id="panel-correction">
+    <div class="panel-header">
+      <div class="panel-step-badge" id="p2-badge"><span>2</span></div>
+      <div class="panel-title-block">
+        <div class="panel-title">Herramientas de corrección</div>
+        <div class="panel-desc">Detecta y corrige orientación de páginas antes de dividir</div>
+      </div>
+      <button class="panel-toggle" id="p2-toggle" onclick="togglePanel('p2')">▼</button>
+    </div>
+    <div class="panel-body-wrap" id="p2-body">
+
+      <!-- Orientation detection banner -->
+      <div class="panel-body">
+        <div class="orient-banner" id="orient-banner">
+          <div class="orient-banner-title" id="orient-banner-title"></div>
+          <div class="orient-banner-sub" id="orient-banner-sub"></div>
+          <div class="orient-progress" id="orient-progress" style="display:none">
+            <div class="orient-progress-fill" id="orient-progress-fill"></div>
+          </div>
+          <div class="orient-actions" id="orient-actions"></div>
+        </div>
+
+        <!-- Rotation global -->
+        <div class="rot-controls">
+          <div class="rot-row">
+            <div class="rot-label">Rotar todo el PDF</div>
+            <div class="rot-btns">
+              <button class="rot-btn" title="90° izquierda" onclick="rotateAll(-90)">↺</button>
+              <button class="rot-btn" title="180°" onclick="rotateAll(180)">↕</button>
+              <button class="rot-btn" title="90° derecha" onclick="rotateAll(90)">↻</button>
+              <button class="rot-btn rot-btn-reset" title="Quitar correcciones globales" onclick="resetAll()">✕ Todo</button>
+            </div>
+          </div>
+          <div class="rot-row">
+            <div class="rot-label">Página individual</div>
+            <div class="rot-btns" style="align-items:center;gap:8px;flex-wrap:wrap;">
+              <select class="page-select" id="page-select" onchange="onPageSelectChange()">
+                <option value="">— página —</option>
+              </select>
+              <button class="rot-btn" title="90° izquierda" onclick="rotatePage(-90)">↺</button>
+              <button class="rot-btn" title="180°" onclick="rotatePage(180)">↕</button>
+              <button class="rot-btn" title="90° derecha" onclick="rotatePage(90)">↻</button>
+              <button class="rot-btn rot-btn-reset" onclick="resetPage()">✕ Pág.</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thumbnail strip -->
+        <div class="thumb-strip-wrap">
+          <div class="thumb-strip-label">Miniaturas — haz clic para seleccionar</div>
+          <div class="thumb-strip" id="thumb-strip">
+            <div class="preview-empty" style="padding:16px 0;width:100%;">
+              <div class="pe-icon" style="font-size:20px;">🖼️</div>
+              <p>Las miniaturas aparecerán aquí al cargar el PDF</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PANEL 3: DETECT / CONFIGURE -->
+  <div class="panel locked" id="panel-detect">
+    <div class="panel-header">
+      <div class="panel-step-badge" id="p3-badge"><span>3</span></div>
+      <div class="panel-title-block">
+        <div class="panel-title">Configurar rutas</div>
+        <div class="panel-desc">Detección automática desde Excel o configuración manual</div>
+      </div>
+      <button class="panel-toggle" id="p3-toggle" onclick="togglePanel('p3')">▼</button>
+    </div>
+    <div class="panel-body-wrap" id="p3-body">
+      <div class="panel-body">
+        <div class="input-label">Detección automática desde Excel <span class="label-tag">RECOMENDADO</span></div>
+        <textarea class="input-field" id="table-input" rows="5"
+          placeholder="Copia desde Excel y pega aquí. Columnas requeridas: RUTA, TRACTOR, CERT&#10;Columna opcional: UNIDAD (o CAJA) — mejora la detección de rutas unificadas&#10;&#10;RUTA&#9;ENTREGA&#9;TRACTOR&#9;UNIDAD&#9;CERT&#10;2101&#9;TABASCO&#9;FS-204&#9;C-01&#9;TIF&#10;2102&#9;TABASCO&#9;FS-204&#9;C-02&#9;TIF/FITO"></textarea>
+        <div class="input-hint">💡 Selecciona todas las filas en Excel → Ctrl+C → pega aquí. Las columnas extra no importan.</div>
+        <button class="detect-btn" id="detect-btn" onclick="detectFromTable()" disabled>⚡ Detectar rutas automáticamente</button>
+        <div class="detect-result-bar" id="detect-result-bar">
+          <span class="drb-title">✅ Listo</span>
+          <div class="drb-chips" id="drb-chips"></div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="or-line">o configura manualmente</div>
+        <div class="two-col-inputs">
+          <div>
+            <div class="input-label input-col-label-cp">Todas las rutas del escaneo</div>
+            <textarea class="input-field textarea-route" id="all-input"
+              placeholder="5201&#10;5202&#10;5201-5202&#10;&#10;Una por línea. Unificadas con guión."></textarea>
+            <div class="input-hint">Todas las rutas en orden de escaneo. Unificadas con guión (2101-2102).</div>
+          </div>
+          <div>
+            <div class="input-label input-col-label-fito">Rutas con FITO</div>
+            <textarea class="input-field textarea-route" id="fito-input"
+              placeholder="5202&#10;5201-5202&#10;&#10;Solo las que tienen hoja FITO"></textarea>
+            <div class="input-hint">Solo las rutas con certificación FITO. Deben coincidir con la lista general.</div>
+          </div>
+        </div>
+        <div class="callout">
+          <span class="callout-icon">🚛</span>
+          <span><strong>Rutas unificadas:</strong> mismo tractor + distinta caja → se escriben con guión (ej. <strong>2101-2102</strong>) y generan un CP y FITO compartido. Si la columna UNIDAD está disponible, la detección automática es más precisa.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 4: PREVIEW -->
+  <div class="panel locked" id="panel-preview">
+    <div class="panel-header">
+      <div class="panel-step-badge" id="p4-badge"><span>4</span></div>
+      <div class="panel-title-block">
+        <div class="panel-title">Vista previa del escaneo</div>
+        <div class="panel-desc">Verifica el orden y nomenclatura antes de dividir</div>
+      </div>
+      <button class="panel-toggle" id="p4-toggle" onclick="togglePanel('p4')">▼</button>
+    </div>
+    <div class="panel-body-wrap" id="p4-body">
+      <div class="panel-body">
+        <div id="preview-content">
+          <div class="preview-empty"><div class="pe-icon">📋</div><p>Configura las rutas para ver la vista previa</p></div>
+        </div>
+        <div class="alert-inline" id="mismatch-alert"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 5: DOWNLOADS -->
+  <div class="panel download-panel" id="panel-downloads">
+    <div class="panel-header">
+      <div class="panel-step-badge" id="p5-badge"><span>5</span></div>
+      <div class="panel-title-block">
+        <div class="panel-title">Archivos generados</div>
+        <div class="panel-desc" id="dl-panel-desc">Listos para descargar</div>
+      </div>
+      <button class="panel-toggle" id="p5-toggle" onclick="togglePanel('p5')">▼</button>
+    </div>
+    <div class="panel-body-wrap" id="p5-body">
+      <div class="panel-body">
+        <div class="dl-summary-line" id="dl-summary" style="margin-bottom:14px;"></div>
+        <div class="dl-grid" id="dl-grid"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
 </div>
 
-<!-- ── ROUTE PICKER ── -->
-<div class="route-picker-overlay hidden" id="routePickerOverlay">
-  <div class="route-picker-box">
-    <div class="route-picker-title" id="rpTitle">Selecciona la ruta a corregir</div>
-    <div class="route-picker-sub"  id="rpSub">Este marchamo aparece en múltiples rutas. ¿Cuál deseas editar?</div>
-    <div class="route-picker-sep"></div>
-    <div class="route-picker-options" id="rpOptions"></div>
-    <button class="route-picker-cancel" id="rpCancel">Cancelar</button>
-  </div>
+<div id="toast-container"></div>
+<div class="mobile-fab">
+  <button class="btn-primary" id="mobile-split-btn" onclick="splitPDF()" disabled style="border-radius:9999px;padding:14px 28px;box-shadow:0 8px 24px rgba(37,99,235,0.4)">✂ Dividir PDF</button>
 </div>
-<!-- ── HISTORIAL DE PROCESAMIENTOS ── -->
-<div class="modal-overlay hidden" id="historyModalOverlay">
-  <div class="modal-box history-modal-box">
-    <div class="history-modal-hdr">
-      <span style="font-size:20px">🗂️</span>
-      <div class="history-modal-title">Historial de Procesamientos</div>
-      <button class="btn btn-ghost btn-sm" id="btnHistoryClose" style="margin-left:auto">✕ Cerrar</button>
-    </div>
 
-    <div id="historyListView">
-      <div id="historyList"></div>
-    </div>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    <div id="historyPreviewView" style="display:none">
-      <button class="btn btn-ghost btn-sm" id="btnHistoryBack">← Volver a la lista</button>
-      <div id="historyPreviewMeta" style="margin:12px 0;font-size:12px;color:var(--text2)"></div>
-      <div class="table-wrap" style="max-height:400px">
-        <table class="data-table">
-          <thead><tr id="histPreviewThead"></tr></thead>
-          <tbody id="histPreviewTbody"></tbody>
-        </table>
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let pdfFile      = null;
+let totalPages   = 0;
+let pdfBytes     = null;   // cached ArrayBuffer
+let pageRotations= {};     // { pageIndex: angleDelta }
+let warnPages    = [];     // [{ pageIndex, suggestedDelta }]
+let generatedFiles = [];
+let currentStep  = 1;
+let selectedThumbPage = null; // 0-based index
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function parseList(raw){ return raw.split(/[\n,]+/).map(s=>s.trim()).filter(Boolean); }
+function makeFilename(route,type){ return `${route} ${type}.pdf`; }
+function buildAssignments(allRoutes,fitoSet){
+  return allRoutes.flatMap(route=>{
+    const a=[{route,type:'CP',unified:route.includes('-')}];
+    if(fitoSet.has(route)) a.push({route,type:'FITO',unified:route.includes('-')});
+    return a;
+  });
+}
+function normalizeAngle(a){ return ((a%360)+360)%360; }
+
+// ══════════════════════════════════════════
+//  UNIFICATION ENGINE  (TRACTOR + CAJA)
+// ══════════════════════════════════════════
+const RULES=[
+  // Rule 1: different tractors → never unify
+  (a,b)=>a.tractor!==b.tractor ? false : null,
+  // Rule 2: same tractor + same caja → second trip / economico → do NOT unify
+  (a,b)=>(a.caja&&b.caja&&a.caja===b.caja) ? false : null,
+  // Rule 3: same tractor + different caja → unify
+  (a,b)=>(a.caja&&b.caja&&a.caja!==b.caja) ? true : null,
+  // Rule 4: fallback — same tractor, no caja info → unify (legacy behavior)
+  ()=>true
+];
+
+function shouldUnify(a,b){
+  for(const rule of RULES){
+    const r=rule(a,b);
+    if(r!==null) return r;
+  }
+  return true;
+}
+
+// ══════════════════════════════════════════
+//  STEPS
+// ══════════════════════════════════════════
+function setStep(n){
+  currentStep=n;
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById('ps'+i);
+    el.className='ps-item'+(i<n?' done':i===n?' active':'');
+  }
+  if(n>=2) document.getElementById('panel-correction').classList.remove('locked');
+  if(n>=3) document.getElementById('panel-detect').classList.remove('locked');
+  if(n>=4) document.getElementById('panel-preview').classList.remove('locked');
+  if(n>=5){
+    document.getElementById('panel-downloads').classList.add('show');
+    document.getElementById('success-banner').classList.add('show');
+  }
+}
+
+function togglePanel(id){
+  const body=document.getElementById(id+'-body');
+  const btn =document.getElementById(id+'-toggle');
+  const c=body.classList.toggle('collapsed');
+  btn.textContent=c?'▶':'▼';
+}
+
+// ══════════════════════════════════════════
+//  DROP ZONE / FILE LOAD
+// ══════════════════════════════════════════
+const dz=document.getElementById('drop-zone');
+const fi=document.getElementById('file-input');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+dz.addEventListener('click',()=>fi.click());
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag-over');
+  const f=e.dataTransfer.files[0];
+  if(f?.type==='application/pdf') loadFile(f);
+  else toast('Solo se aceptan archivos .pdf','error');
+});
+fi.addEventListener('change',()=>{if(fi.files[0])loadFile(fi.files[0]);});
+
+async function loadFile(f){
+  pdfFile=f;
+  pdfBytes=await f.arrayBuffer();
+  // pdf.js detaches the buffer — pass a copy so pdfBytes stays intact for pdf-lib
+  const pdf=await pdfjsLib.getDocument(pdfBytes.slice(0)).promise;
+  totalPages=pdf.numPages;
+  pageRotations={};
+  warnPages=[];
+  generatedFiles=[];
+
+  // UI updates
+  document.getElementById('dz-loaded-name').textContent=f.name;
+  document.getElementById('dz-loaded-pages').textContent=`${totalPages} páginas`;
+  document.getElementById('dz-loaded').classList.add('show');
+  document.getElementById('sb-pdf-empty').style.display='none';
+  document.getElementById('sb-pdf-loaded').style.display='flex';
+  document.getElementById('sb-pdf-name').textContent=f.name;
+  document.getElementById('sb-pdf-meta').textContent=`${totalPages} páginas`;
+  document.getElementById('panel-pdf').classList.add('done-panel');
+
+  // Populate page select
+  const sel=document.getElementById('page-select');
+  sel.innerHTML='<option value="">— página —</option>';
+  for(let i=1;i<=totalPages;i++) sel.innerHTML+=`<option value="${i-1}">Página ${i}</option>`;
+
+  // Unlock PDF (1), Correction (2) AND Routes (3) — user can go directly to step 3
+  setStep(3);
+  // Collapse panel 1, keep panel 2 collapsed by default
+  setTimeout(()=>{
+    togglePanel('p1');
+    // Ensure panel 2 starts collapsed — user only opens it if needed
+    const p2body=document.getElementById('p2-body');
+    const p2btn =document.getElementById('p2-toggle');
+    if(!p2body.classList.contains('collapsed')){
+      p2body.classList.add('collapsed');
+      p2btn.textContent='▶';
+    }
+    // Scroll to panel 3
+    setTimeout(()=>document.getElementById('panel-detect').scrollIntoView({behavior:'smooth',block:'start'}),200);
+  },400);
+
+  toast(`PDF cargado — ${totalPages} páginas`,'success',f.name);
+
+  // Run orientation analysis + render thumbnails in parallel
+  renderThumbnails(pdf);
+  analyzeOrientation(pdf);
+  refresh();
+}
+
+// ══════════════════════════════════════════
+//  ORIENTATION DETECTION
+// ══════════════════════════════════════════
+async function analyzeOrientation(pdf){
+  const banner=document.getElementById('orient-banner');
+  const bTitle=document.getElementById('orient-banner-title');
+  const bSub  =document.getElementById('orient-banner-sub');
+  const bProg =document.getElementById('orient-progress');
+  const bFill =document.getElementById('orient-progress-fill');
+  const bActs =document.getElementById('orient-actions');
+
+  banner.className='orient-banner scanning';
+  bTitle.textContent='Analizando orientación de páginas...';
+  bSub.textContent=`Revisando ${totalPages} páginas`;
+  bProg.style.display='block';
+  bFill.style.width='0%';
+  bActs.innerHTML='';
+
+  const results=[];
+
+  for(let i=0;i<totalPages;i++){
+    const page=await pdf.getPage(i+1);
+    const vp=page.getViewport({scale:1});
+
+    // Criterion 1: PDF metadata rotation
+    const metaRot=page.rotate||0;
+
+    // Criterion 2: Aspect ratio heuristic
+    const isLandscape=vp.width>vp.height;
+    const aspectRot=isLandscape?90:0;
+
+    results.push({pageIndex:i,metaRot,aspectRot,isLandscape});
+    bFill.style.width=Math.round(((i+1)/totalPages)*100)+'%';
+  }
+
+  // Dominant orientation = most common metaRot
+  const rotCounts={};
+  results.forEach(r=>{rotCounts[r.metaRot]=(rotCounts[r.metaRot]||0)+1;});
+  const dominantRot=parseInt(Object.entries(rotCounts).sort((a,b)=>b[1]-a[1])[0][0]);
+
+  // Pages that deviate from dominant
+  warnPages=results
+    .filter(r=>r.metaRot!==dominantRot)
+    .map(r=>({
+      pageIndex:r.pageIndex,
+      currentRot:r.metaRot,
+      suggestedDelta:(dominantRot-r.metaRot+360)%360
+    }));
+
+  bProg.style.display='none';
+
+  if(warnPages.length===0){
+    // All good — silent toast only, panel 2 stays collapsed
+    banner.className='orient-banner'; // hide banner
+    banner.style.display='none';
+    toast('✓ Orientación uniforme — todas las páginas están correctas','success');
+  } else {
+    banner.className='orient-banner warn';
+    const pageNums=warnPages.map(w=>`Pág.${w.pageIndex+1}`).join(', ');
+    bTitle.textContent=`⚠ ${warnPages.length} página(s) con orientación diferente`;
+    bSub.textContent=`Orientación dominante: ${dominantRot}°. Páginas afectadas: ${pageNums}.`;
+    bActs.innerHTML=`
+      <button class="btn-sm btn-sm-amber" onclick="autoFixOrientation()">✓ Corregir automáticamente</button>
+      <button class="btn-sm btn-sm-outline" onclick="reviewManually()">👁 Revisar manualmente</button>
+      <button class="btn-sm btn-sm-ghost" onclick="dismissOrientBanner()">Ignorar</button>
+    `;
+    // Expand panel 2 so the user sees the warning
+    const p2body=document.getElementById('p2-body');
+    const p2btn =document.getElementById('p2-toggle');
+    if(p2body.classList.contains('collapsed')){
+      p2body.classList.remove('collapsed');
+      p2btn.textContent='▼';
+    }
+    document.getElementById('panel-correction').scrollIntoView({behavior:'smooth',block:'start'});
+    // Highlight warn thumbs
+    warnPages.forEach(w=>markThumbWarn(w.pageIndex,true));
+  }
+}
+
+function autoFixOrientation(){
+  warnPages.forEach(w=>{
+    pageRotations[w.pageIndex]=(pageRotations[w.pageIndex]||0)+w.suggestedDelta;
+    markThumbCorrection(w.pageIndex);
+  });
+  const banner=document.getElementById('orient-banner');
+  banner.className='orient-banner ok';
+  document.getElementById('orient-banner-title').textContent=`✓ ${warnPages.length} página(s) corregida(s)`;
+  document.getElementById('orient-banner-sub').textContent='Correcciones aplicadas automáticamente. Puedes ajustar manualmente desde la tira de miniaturas.';
+  document.getElementById('orient-actions').innerHTML='';
+  toast(`${warnPages.length} página(s) corregidas automáticamente`,'success');
+}
+
+function reviewManually(){
+  if(warnPages.length>0){
+    selectThumbPage(warnPages[0].pageIndex);
+    document.getElementById('page-select').value=warnPages[0].pageIndex;
+    document.getElementById('panel-correction').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+}
+
+function dismissOrientBanner(){
+  document.getElementById('orient-banner').style.display='none';
+}
+
+// ══════════════════════════════════════════
+//  THUMBNAILS
+// ══════════════════════════════════════════
+async function renderThumbnails(pdf){
+  const strip=document.getElementById('thumb-strip');
+  strip.innerHTML='';
+
+  for(let i=0;i<totalPages;i++){
+    // Placeholder
+    const placeholder=document.createElement('div');
+    placeholder.className='thumb-item';
+    placeholder.id=`thumb-${i}`;
+    placeholder.innerHTML=`<div class="thumb-canvas-wrap"><div class="thumb-loading"><div class="thumb-spinner"></div></div></div><div class="thumb-num">Pág.${i+1}</div>`;
+    placeholder.onclick=()=>selectThumbPage(i);
+    strip.appendChild(placeholder);
+
+    // Render async
+    renderOneThumbnail(pdf,i);
+  }
+}
+
+async function renderOneThumbnail(pdf,idx){
+  const page=await pdf.getPage(idx+1);
+  const scale=72/Math.max(page.getViewport({scale:1}).width,page.getViewport({scale:1}).height);
+  const vp=page.getViewport({scale});
+  const canvas=document.createElement('canvas');
+  canvas.width=vp.width;canvas.height=vp.height;
+  await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+
+  const item=document.getElementById(`thumb-${idx}`);
+  if(!item) return;
+  const wrap=item.querySelector('.thumb-canvas-wrap');
+  wrap.innerHTML='';
+  wrap.appendChild(canvas);
+}
+
+function selectThumbPage(idx){
+  // Deselect old
+  if(selectedThumbPage!==null){
+    const old=document.getElementById(`thumb-${selectedThumbPage}`);
+    if(old) old.classList.remove('selected');
+  }
+  selectedThumbPage=idx;
+  const el=document.getElementById(`thumb-${idx}`);
+  if(el){
+    el.classList.add('selected');
+    el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  }
+  document.getElementById('page-select').value=idx;
+}
+
+function markThumbWarn(idx,on){
+  const item=document.getElementById(`thumb-${idx}`);
+  if(!item) return;
+  item.classList.toggle('has-warn',on);
+  const wrap=item.querySelector('.thumb-canvas-wrap');
+  let badge=wrap.querySelector('.thumb-badge');
+  if(on&&!badge){
+    badge=document.createElement('div');
+    badge.className='thumb-badge';
+    badge.textContent='⚠';
+    wrap.appendChild(badge);
+  } else if(!on&&badge){ badge.remove(); }
+}
+
+function markThumbCorrection(idx){
+  const item=document.getElementById(`thumb-${idx}`);
+  if(!item) return;
+  item.classList.remove('has-warn');
+  item.classList.add('has-correction');
+  const wrap=item.querySelector('.thumb-canvas-wrap');
+  let badge=wrap.querySelector('.thumb-badge');
+  if(!badge){ badge=document.createElement('div');badge.className='thumb-badge correction';wrap.appendChild(badge); }
+  badge.className='thumb-badge correction';
+  const rot=normalizeAngle(pageRotations[idx]||0);
+  badge.textContent=rot?`${rot}°`:'✓';
+}
+
+function onPageSelectChange(){
+  const v=document.getElementById('page-select').value;
+  if(v!=='') selectThumbPage(parseInt(v));
+}
+
+// ══════════════════════════════════════════
+//  ROTATION CONTROLS
+// ══════════════════════════════════════════
+function rotateAll(delta){
+  for(let i=0;i<totalPages;i++){
+    pageRotations[i]=(pageRotations[i]||0)+delta;
+    if(pageRotations[i]===0) delete pageRotations[i];
+    markThumbCorrection(i);
+  }
+  toast(`Todas las páginas rotadas ${delta>0?'+':''}${delta}°`,'info');
+}
+
+function resetAll(){
+  pageRotations={};
+  for(let i=0;i<totalPages;i++){
+    const item=document.getElementById(`thumb-${i}`);
+    if(item){
+      item.classList.remove('has-correction');
+      const badge=item.querySelector('.thumb-badge.correction');
+      if(badge) badge.remove();
+    }
+  }
+  toast('Correcciones de rotación eliminadas','info');
+}
+
+function rotatePage(delta){
+  const v=document.getElementById('page-select').value;
+  if(v==='') return toast('Selecciona una página primero','warning');
+  const idx=parseInt(v);
+  pageRotations[idx]=(pageRotations[idx]||0)+delta;
+  if(pageRotations[idx]===0) delete pageRotations[idx];
+  markThumbCorrection(idx);
+  toast(`Pág.${idx+1} rotada ${delta>0?'+':''}${delta}°`,'info');
+}
+
+function resetPage(){
+  const v=document.getElementById('page-select').value;
+  if(v==='') return;
+  const idx=parseInt(v);
+  delete pageRotations[idx];
+  const item=document.getElementById(`thumb-${idx}`);
+  if(item){
+    item.classList.remove('has-correction');
+    const badge=item.querySelector('.thumb-badge.correction');
+    if(badge) badge.remove();
+  }
+}
+
+// ══════════════════════════════════════════
+//  AUTO-DETECT FROM EXCEL TABLE
+// ══════════════════════════════════════════
+const tableInput=document.getElementById('table-input');
+tableInput.addEventListener('input',()=>{
+  document.getElementById('detect-btn').disabled=tableInput.value.trim().length<5;
+});
+
+function detectFromTable(){
+  const raw=tableInput.value.trim();
+  if(!raw) return;
+
+  const lines=raw.split('\n').map(l=>l.split('\t').map(c=>c.trim()));
+  let headerIdx=-1,colRuta=-1,colTractor=-1,colCert=-1,colCaja=-1;
+
+  for(let i=0;i<Math.min(lines.length,5);i++){
+    const row=lines[i].map(c=>c.toUpperCase());
+    const rIdx=row.findIndex(c=>c==='RUTA'||c==='ROUTE');
+    const tIdx=row.findIndex(c=>c.includes('TRACTOR')||c==='TRACTO');
+    const cIdx=row.findIndex(c=>c==='CERT'||c==='CERTIFICADO');
+    const uIdx=row.findIndex(c=>c==='UNIDAD'||c==='CAJA'||c==='TRAILER');
+    if(rIdx>=0&&tIdx>=0){headerIdx=i;colRuta=rIdx;colTractor=tIdx;colCert=cIdx;colCaja=uIdx;break;}
+  }
+
+  if(headerIdx<0){ toast('No se encontró encabezado RUTA/TRACTOR. Verifica el formato.','error'); return; }
+
+  const hasUnidad=colCaja>=0;
+  const dataLines=lines.slice(headerIdx+1).filter(r=>r.length>Math.max(colRuta,colTractor));
+
+  // Build row objects
+  const allRows=[];
+  const tractorGroups={};
+  for(const row of dataLines){
+    const ruta   =row[colRuta]?.trim();
+    const tractor=row[colTractor]?.trim();
+    const cert   =colCert>=0?row[colCert]?.trim():'';
+    const caja   =colCaja>=0?row[colCaja]?.trim():'';
+    if(!ruta||!tractor) continue;
+    const obj={ruta,tractor,cert,caja};
+    if(!tractorGroups[tractor]) tractorGroups[tractor]=[];
+    tractorGroups[tractor].push(obj);
+    allRows.push(obj);
+  }
+
+  // Apply UnificationEngine
+  const unifiedMap={};
+  for(const routes of Object.values(tractorGroups)){
+    if(routes.length<2) continue;
+    // Check all pairs in group
+    const pairToUnify=[];
+    for(let i=0;i<routes.length;i++){
+      for(let j=i+1;j<routes.length;j++){
+        if(shouldUnify(routes[i],routes[j])){
+          pairToUnify.push([routes[i].ruta,routes[j].ruta]);
+        }
+      }
+    }
+    for(const [a,b] of pairToUnify){
+      const sorted=[a,b].sort((x,y)=>Number(x)-Number(y));
+      const label=sorted.join('-');
+      unifiedMap[a]=label;
+      unifiedMap[b]=label;
+    }
+  }
+
+  const seenLabels=new Set();
+  const orderedRoutes=[];
+  const fitoSet=new Set();
+
+  for(const {ruta,cert} of allRows){
+    const label=unifiedMap[ruta]||ruta;
+    if(!seenLabels.has(label)){seenLabels.add(label);orderedRoutes.push(label);}
+    if(cert&&cert.toUpperCase().includes('FITO')) fitoSet.add(label);
+  }
+
+  document.getElementById('all-input').value=orderedRoutes.join('\n');
+  document.getElementById('fito-input').value=[...fitoSet].join('\n');
+  document.getElementById('all-input').classList.add('auto-filled');
+  document.getElementById('fito-input').classList.add('auto-filled');
+
+  const unifiedCount=new Set(Object.values(unifiedMap)).size;
+  const chips=document.getElementById('drb-chips');
+  chips.innerHTML=`
+    <span class="drb-chip drb-chip-green">✅ ${orderedRoutes.length} rutas</span>
+    <span class="drb-chip drb-chip-green">🌿 ${fitoSet.size} FITO</span>
+    ${unifiedCount?`<span class="drb-chip drb-chip-purple">🔗 ${unifiedCount} unificada(s)</span>`:''}
+    ${!hasUnidad?`<span class="drb-chip drb-chip-warn">⚠ Sin columna UNIDAD — precisión parcial</span>`:''}
+  `;
+  document.getElementById('detect-result-bar').classList.add('show');
+
+  refresh();
+  setStep(Math.max(currentStep,4));
+  toast(`⚡ ${orderedRoutes.length} rutas detectadas`,'success',
+    `${fitoSet.size} FITO${unifiedCount?` · ${unifiedCount} unificada(s)`:''}${!hasUnidad?' · Sin col. UNIDAD':''}`);
+}
+
+// ══════════════════════════════════════════
+//  LIVE REFRESH
+// ══════════════════════════════════════════
+document.getElementById('all-input').addEventListener('input',refresh);
+document.getElementById('fito-input').addEventListener('input',refresh);
+
+function refresh(){
+  const allRoutes =parseList(document.getElementById('all-input').value);
+  const fitoRoutes=parseList(document.getElementById('fito-input').value);
+  const fitoSet   =new Set(fitoRoutes);
+  const assignments=buildAssignments(allRoutes,fitoSet);
+
+  const cpCount   =assignments.filter(a=>a.type==='CP'&&!a.unified).length;
+  const fitoCount =assignments.filter(a=>a.type==='FITO').length;
+  const uniCount  =allRoutes.filter(r=>r.includes('-')).length;
+  const total     =assignments.length;
+
+  function updateStat(id,valId,value,hasVal){
+    document.getElementById(valId).textContent=hasVal?value:'—';
+    document.getElementById(id).classList.toggle('has-value',hasVal);
+  }
+  updateStat('sc-cp','sc-cp-val',cpCount,cpCount>0);
+  updateStat('sc-fito','sc-fito-val',fitoCount,fitoCount>0);
+  updateStat('sc-uni','sc-uni-val',uniCount,uniCount>0);
+  updateStat('sc-total','sc-total-val',total,total>0);
+
+  // Page match
+  const pmEl=document.getElementById('page-match');
+  if(totalPages>0&&total>0){
+    if(total===totalPages){pmEl.className='page-match ok';pmEl.innerHTML='✓ Páginas coinciden perfectamente';}
+    else if(total<totalPages){pmEl.className='page-match warn';pmEl.innerHTML=`<strong>⚠ ${totalPages-total} pág. sin nombre</strong><br>PDF: ${totalPages} · Esperadas: ${total}`;}
+    else{pmEl.className='page-match error-s';pmEl.innerHTML=`<strong>⛔ Faltan ${total-totalPages} páginas</strong><br>PDF: ${totalPages} · Esperadas: ${total}`;}
+  } else { pmEl.className='page-match'; }
+
+  // Inline alert
+  const alertEl=document.getElementById('mismatch-alert');
+  const allSet=new Set(allRoutes);
+  const unknownFito=fitoRoutes.filter(r=>!allSet.has(r));
+  const warns=[];
+  if(unknownFito.length) warns.push(`⚠ Rutas FITO no encontradas en lista general: ${unknownFito.join(', ')}`);
+  if(totalPages>0&&total!==totalPages){
+    if(total<totalPages) warns.push(`⚠ ${totalPages-total} página(s) al final del PDF quedarán sin nombre.`);
+    else warns.push(`⛔ Faltan ${total-totalPages} página(s) — el PDF tiene ${totalPages} y se esperan ${total}.`);
+  }
+  alertEl.innerHTML=warns.length?warns.join('<br>'):'';
+  alertEl.className='alert-inline'+(warns.length?(warns[0].startsWith('⛔')?' error-a':' warn'):'');
+
+  // Preview table
+  const previewContent=document.getElementById('preview-content');
+  if(!assignments.length){
+    previewContent.innerHTML=`<div class="preview-empty"><div class="pe-icon">📋</div><p>Configura las rutas para ver la vista previa</p></div>`;
+    document.getElementById('split-btn').disabled=true;
+    document.getElementById('mobile-split-btn').disabled=true;
+    return;
+  }
+
+  let rows='';
+  assignments.forEach(({route,type,unified},i)=>{
+    const pageNum=i+1;
+    const inRange=totalPages===0||pageNum<=totalPages;
+    const filename=makeFilename(route,type);
+    const typeClass=unified?'unified':type.toLowerCase();
+    const tagLabel=unified?`${type} · UNIF`:type;
+    const rotDelta=pageRotations[i];
+    const rotBadge=rotDelta?`<span class="row-tag" style="background:var(--blue-50);color:var(--blue-600);border:1px solid var(--blue-100);">${normalizeAngle(rotDelta)}°</span>`:'';
+    rows+=`<tr>
+      <td class="td-num">${pageNum}</td>
+      <td class="td-page">${inRange?`Pág.&nbsp;${pageNum}`:'—'}</td>
+      <td class="td-file ${typeClass}">${filename}</td>
+      <td><span class="row-tag tag-${typeClass}">${tagLabel}</span>${rotBadge}${!inRange?' <span class="row-tag tag-warn">sin pág.</span>':''}</td>
+    </tr>`;
+  });
+
+  previewContent.innerHTML=`
+    <div class="preview-header">
+      <div class="preview-title">Orden del escaneo</div>
+      <div class="preview-count">${assignments.length} archivo(s) a generar</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th class="td-num">#</th><th class="td-page">Pág. PDF</th><th>Nombre del archivo</th><th>Tipo</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+
+  const canSplit=!!pdfFile&&assignments.length>0;
+  document.getElementById('split-btn').disabled=!canSplit;
+  document.getElementById('mobile-split-btn').disabled=!canSplit;
+  if(canSplit) setStep(Math.max(currentStep,4));
+}
+
+// ══════════════════════════════════════════
+//  SPLIT PDF
+// ══════════════════════════════════════════
+async function splitPDF(){
+  if(!pdfFile) return toast('Selecciona un archivo PDF primero','error');
+  const allRoutes =parseList(document.getElementById('all-input').value);
+  const fitoRoutes=parseList(document.getElementById('fito-input').value);
+  if(!allRoutes.length) return toast('Agrega las rutas primero','error');
+
+  const assignments=buildAssignments(allRoutes,new Set(fitoRoutes));
+  const limit=Math.min(assignments.length,totalPages);
+
+  const splitBtn =document.getElementById('split-btn');
+  const mSplitBtn=document.getElementById('mobile-split-btn');
+  splitBtn.disabled=true; mSplitBtn.disabled=true;
+  splitBtn.textContent='⏳ Procesando...';
+
+  const progressEl=document.getElementById('split-progress');
+  const fillEl    =document.getElementById('sp-fill');
+  const labelEl   =document.getElementById('sp-label-text');
+  const pctEl     =document.getElementById('sp-pct');
+  progressEl.classList.add('show');
+  document.getElementById('panel-downloads').classList.remove('show');
+  document.getElementById('success-banner').classList.remove('show');
+  document.getElementById('zip-btn').style.display='none';
+  generatedFiles=[];
+
+  // Load source once — ArrayBuffer gets detached after first load if reused
+  const srcDoc=await PDFLib.PDFDocument.load(pdfBytes.slice(0));
+
+  for(let i=0;i<limit;i++){
+    const {route,type}=assignments[i];
+    const newDoc=await PDFLib.PDFDocument.create();
+    const [copied]=await newDoc.copyPages(srcDoc,[i]);
+
+    // Apply rotation if any
+    const rotDelta=pageRotations[i];
+    if(rotDelta){
+      const currentRot=copied.getRotation().angle;
+      copied.setRotation(PDFLib.degrees(normalizeAngle(currentRot+rotDelta)));
+    }
+
+    newDoc.addPage(copied);
+    const bytes =await newDoc.save();
+    const blob  =new Blob([bytes],{type:'application/pdf'});
+    const url   =URL.createObjectURL(blob);
+    const filename=makeFilename(route,type);
+    generatedFiles.push({filename,bytes,url,type,unified:route.includes('-')});
+
+    const pct=Math.round(((i+1)/limit)*100);
+    fillEl.style.width=pct+'%';
+    labelEl.textContent=`Generando ${i+1} de ${limit}`;
+    pctEl.textContent=pct+'%';
+  }
+
+  progressEl.classList.remove('show');
+  splitBtn.disabled=false; mSplitBtn.disabled=false;
+  splitBtn.innerHTML='✂&nbsp; Dividir PDF';
+
+  showDownloads(generatedFiles);
+  setStep(5);
+  toast(`✅ ${generatedFiles.length} archivos generados`,'success','Descarga los archivos o el ZIP completo');
+}
+
+// ══════════════════════════════════════════
+//  DOWNLOADS
+// ══════════════════════════════════════════
+function showDownloads(files){
+  const panel=document.getElementById('panel-downloads');
+  const grid =document.getElementById('dl-grid');
+  panel.classList.add('show');
+  grid.innerHTML='';
+
+  const cpCount  =files.filter(f=>f.type==='CP'&&!f.unified).length;
+  const fitoCount=files.filter(f=>f.type==='FITO').length;
+  const uniCount =files.filter(f=>f.unified).length;
+
+  let summary=`<strong>${files.length} archivos</strong> &nbsp;·&nbsp; CP: ${cpCount} &nbsp;·&nbsp; FITO: ${fitoCount}`;
+  if(uniCount) summary+=` &nbsp;·&nbsp; Unificadas: ${uniCount}`;
+  document.getElementById('dl-summary').innerHTML=summary;
+  document.getElementById('dl-panel-desc').textContent=`${files.length} archivos listos`;
+
+  const hasRot=Object.keys(pageRotations).length>0;
+  const corrNote=hasRot?` · ${Object.keys(pageRotations).length} pág. con rotación aplicada`:'';
+
+  files.forEach(({filename,url,type,unified},idx)=>{
+    const colorClass=unified?'dl-unified':`dl-${type.toLowerCase()}`;
+    const nameClass =unified?'unified':type.toLowerCase();
+    const div=document.createElement('div');
+    div.className=`dl-item ${colorClass}`;
+    div.style.animationDelay=`${idx*18}ms`;
+    div.innerHTML=`
+      <div class="dl-file-icon">📄</div>
+      <div class="dl-info">
+        <div class="dl-name ${nameClass}">${filename}</div>
+        <div class="dl-meta">${unified?'Unificada · ':''}${type} · 1 pág.</div>
       </div>
-      <div style="margin-top:14px;text-align:right">
-        <button class="btn btn-amber" id="btnHistoryRedownload">⬇ Descargar de nuevo</button>
-      </div>
-    </div>
-  </div>
-</div>
+      <a class="dl-btn-link" href="${url}" download="${filename}">↓ Bajar</a>`;
+    grid.appendChild(div);
+  });
 
-<!-- ── EDIT DRAWER ── -->
-<!-- ── EDIT DRAWER ── -->
-<div class="edit-drawer" id="editDrawer">
-  <div class="edit-drawer-hdr">
-    <div>
-      <div class="edit-drawer-title">Editar registro</div>
-    </div>
-    <span class="edit-drawer-ruta" id="editDrawerRuta">—</span>
-    <div style="margin-left:auto;display:flex;gap:8px">
-      <span class="edit-change-badge" id="editChangeBadge" style="display:none">Sin cambios</span>
-      <button class="btn btn-success btn-sm" id="btnEditSave">✓ Guardar y revalidar</button>
-      <button class="btn btn-ghost btn-sm" id="btnEditCancel">Cancelar</button>
-    </div>
-  </div>
-  <div class="edit-drawer-body">
-    <div class="edit-fields-grid" id="editFieldsGrid"></div>
-  </div>
-</div>
+  document.getElementById('zip-btn').style.display='flex';
+  document.getElementById('zip-btn').disabled=false;
+  document.getElementById('success-title').textContent=`✅ ${files.length} archivos listos`;
+  document.getElementById('success-sub').textContent=`CP: ${cpCount} · FITO: ${fitoCount}${uniCount?` · Unificadas: ${uniCount}`:''}${corrNote}`;
+  document.getElementById('success-banner').classList.add('show');
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+}
 
-<script type="module">
-import { init } from './src/core/app.js';
+// ══════════════════════════════════════════
+//  ZIP
+// ══════════════════════════════════════════
+async function downloadZip(){
+  if(!generatedFiles.length) return;
+  const btn=document.getElementById('zip-btn');
+  btn.disabled=true; btn.textContent='⏳ Preparando ZIP...';
+  const zip=new JSZip();
+  generatedFiles.forEach(({filename,bytes})=>zip.file(filename,bytes));
+  const zipBlob=await zip.generateAsync(
+    {type:'blob',compression:'DEFLATE',compressionOptions:{level:6}},
+    meta=>{btn.textContent=`🗜️ Comprimiendo ${Math.round(meta.percent)}%...`;}
+  );
+  const url=URL.createObjectURL(zipBlob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`rutas_${new Date().toISOString().slice(0,10)}.zip`; a.click();
+  URL.revokeObjectURL(url);
+  btn.disabled=false; btn.innerHTML='🗜️&nbsp; Descargar todo como ZIP';
+  toast(`⬇ ZIP descargado`,'success',`${generatedFiles.length} archivos comprimidos`);
+}
 
-// pdfjsLib worker — debe configurarse antes de que cualquier módulo
-// llame a pdfjsLib.getDocument(). El import de app.js resuelve todos
-// los módulos antes de ejecutar este código, así que la configuración
-// llega a tiempo.
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-// Boot — el catálogo de operadores se carga desde Supabase (Camino B,
-// Fase 1). Ver src/core/app.js → init() → initCatalog().
-init();
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+function toast(msg,type='info',sub=''){
+  const container=document.getElementById('toast-container');
+  const icons={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<div class="toast-icon">${icons[type]||'ℹ️'}</div><div class="toast-body"><div class="toast-msg">${msg}</div>${sub?`<div class="toast-sub">${sub}</div>`:''}</div>`;
+  el.onclick=()=>dismissToast(el);
+  container.appendChild(el);
+  setTimeout(()=>dismissToast(el),4000);
+}
+function dismissToast(el){
+  el.classList.add('hiding');
+  setTimeout(()=>el.remove(),200);
+}
 </script>
 </body>
 </html>
