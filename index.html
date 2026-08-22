@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DispatchDock — CEDIS Walmart</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap');
@@ -41,6 +40,13 @@ button{font-family:inherit;}
 .desk-status.tone-ready{border-color:rgba(30,79,216,.5);background:rgba(30,79,216,.18);color:#B9C8FA;}
 .desk-status.tone-warn{border-color:rgba(245,183,0,.5);background:rgba(245,183,0,.14);color:var(--dock-yellow);}
 .desk-status.tone-done{border-color:rgba(31,138,95,.5);background:rgba(31,138,95,.18);color:#8FE0BB;}
+.identity-slot{flex:1;display:flex;justify-content:center;min-width:0;padding:0 16px;}
+.identity-greeting{font-size:12px;color:rgba(255,255,255,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.identity-prompt{display:flex;align-items:center;gap:6px;}
+.identity-input{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:var(--r-full);padding:5px 12px;font-size:11.5px;color:#fff;width:150px;font-family:var(--font-body);}
+.identity-input::placeholder{color:rgba(255,255,255,.4);}
+.identity-input:focus{outline:none;border-color:var(--dock-yellow);}
+.identity-submit{width:24px;height:24px;border-radius:var(--r-full);border:none;background:var(--dock-yellow);color:var(--dock-yellow-ink);font-weight:700;font-size:11px;cursor:pointer;flex-shrink:0;}
 
 /* ── MAIN ───────────────────────────────── */
 .desk-main{max-width:920px;margin:0 auto;padding:32px 20px 100px;}
@@ -238,6 +244,7 @@ tbody td{padding:8px 14px;vertical-align:middle;font-family:var(--font-mono);fon
   .manual-grid{grid-template-columns:1fr;}
   .desk-topbar{padding:12px 16px;}
   .brand-word{font-size:14px;}
+  .identity-slot{display:none;}
   .desk-main{padding:20px 14px 90px;}
   .cta-stamp-btn{width:100%;position:sticky;bottom:14px;z-index:50;}
 }
@@ -261,6 +268,7 @@ tbody td{padding:8px 14px;vertical-align:middle;font-family:var(--font-mono);fon
       <span class="brand-sub">CEDIS Walmart</span>
     </div>
   </div>
+  <div class="identity-slot" id="identity-slot"></div>
   <div class="desk-status tone-idle" id="desk-status">Sin PDF cargado</div>
 </header>
 
