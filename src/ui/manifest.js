@@ -23,6 +23,7 @@
 
 import { normalizeAngle } from '../core/angle.js';
 import { escapeHtml } from '../core/sanitize.js';
+import { iconCheckCircle, iconAlertTriangle, iconAlertCircle } from './icons.js';
 
 /**
  * @param {{cpCount:number, fitoCount:number, uniCount:number}} stats
@@ -62,8 +63,8 @@ export function renderManifestStatus(matchResult, totalPages, total, warnings) {
   section.classList.remove('tone-ok', 'tone-warn', 'tone-error');
   section.classList.add(toneByState[matchResult.state]);
 
-  const iconByState = { ok: '✓', warn: '⚠', error: '⛔' };
-  icon.textContent = iconByState[matchResult.state];
+  const iconByState = { ok: iconCheckCircle(), warn: iconAlertTriangle(), error: iconAlertCircle() };
+  icon.innerHTML = iconByState[matchResult.state];
 
   let mainText;
   if (matchResult.state === 'ok') {

@@ -18,30 +18,44 @@
      CDN con la tecnología actual de navegadores; se mitiga fijando versión
      exacta + URL completa (misma estrategia que ya usa el proyecto). -->
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root{
-  --ink-900:#12141A;--ink-700:#2A2D35;--ink-500:#5B5E68;--ink-300:#9A9DA8;--ink-100:#D8D6CC;
-  --paper-0:#FAFAF7;--paper-50:#F3F1E9;--card-0:#FFFFFF;--line:#E3E0D3;
-  --route-600:#1E4FD8;--route-700:#153AA8;--route-100:#E7ECFB;
-  --dock-yellow:#F5B700;--dock-yellow-ink:#3A2B00;
-  --cert-600:#1F8A5F;--cert-100:#E3F3EA;
-  --rust-600:#C1440E;--rust-100:#FBE7DD;
-  --r-sm:6px;--r-md:10px;--r-lg:16px;--r-full:9999px;
-  --shadow-card:0 1px 2px rgba(18,20,26,.05),0 10px 24px -12px rgba(18,20,26,.16);
-  --shadow-pop:0 20px 40px -12px rgba(18,20,26,.28);
-  --font-display:'Oswald',sans-serif;--font-body:'IBM Plex Sans',-apple-system,sans-serif;--font-mono:'IBM Plex Mono',monospace;
-  --t-fast:120ms ease;--t-base:200ms cubic-bezier(.4,0,.2,1);
+  --ink-900:#101828;--ink-700:#1D2939;--ink-500:#5B6472;--ink-300:#8A93A3;--ink-100:#DCE1EA;
+  --paper-0:#F4F6F9;--paper-50:#F7F9FC;--card-0:#FFFFFF;--line:#DCE1EA;
+  --route-600:#0B3C8C;--route-700:#082C63;--route-100:#E8EFFB;
+  --dock-yellow:#FFC220;--dock-yellow-ink:#1A1300;
+  --cert-600:#1A7F4E;--cert-100:#E6F5ED;
+  --rust-600:#B3261E;--rust-100:#FBE9E7;
+  --header-bg:#0A1E42;
+  --texture-dot:rgba(16,24,40,.06);
+  --r-sm:6px;--r-md:10px;--r-lg:14px;--r-full:9999px;
+  --shadow-card:0 1px 2px rgba(16,24,40,.04),0 4px 14px -6px rgba(16,24,40,.10);
+  --shadow-pop:0 20px 40px -12px rgba(16,24,40,.22);
+  --font-display:'Inter',-apple-system,sans-serif;--font-body:'Inter','Segoe UI',-apple-system,sans-serif;--font-mono:'IBM Plex Mono',monospace;
+  --t-fast:120ms ease;--t-base:180ms cubic-bezier(.4,0,.2,1);
+}
+[data-theme="dark"]{
+  --ink-900:#EAF0FB;--ink-700:#C8D2E3;--ink-500:#9DA9C0;--ink-300:#6E7A93;--ink-100:#374767;
+  --paper-0:#0B1220;--paper-50:#0E1626;--card-0:#121A2B;--line:#263450;
+  --route-600:#4C86F0;--route-700:#699BF3;--route-100:#162238;
+  --dock-yellow:#FFC220;--dock-yellow-ink:#1A1300;
+  --cert-600:#45C285;--cert-100:#102A20;
+  --rust-600:#F0665C;--rust-100:#2C1512;
+  --header-bg:#060D1C;
+  --texture-dot:rgba(234,240,251,.05);
+  --shadow-card:0 1px 2px rgba(0,0,0,.3),0 6px 18px -8px rgba(0,0,0,.5);
+  --shadow-pop:0 20px 40px -12px rgba(0,0,0,.6);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:15px;-webkit-font-smoothing:antialiased;}
-body{font-family:var(--font-body);background:var(--paper-0);color:var(--ink-700);min-height:100vh;line-height:1.5;}
+body{font-family:var(--font-body);background-color:var(--paper-0);background-image:radial-gradient(circle,var(--texture-dot) 1px,transparent 1px);background-size:22px 22px;color:var(--ink-700);min-height:100vh;line-height:1.5;transition:background-color var(--t-base),color var(--t-base);}
 button{font-family:inherit;}
 :focus-visible{outline:2.5px solid var(--route-600);outline-offset:2px;}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important;}}
 
 /* ── TOPBAR ─────────────────────────────── */
-.desk-topbar{background:var(--ink-900);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;position:sticky;top:0;z-index:100;}
+.desk-topbar{background:var(--header-bg);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;position:sticky;top:0;z-index:100;}
 .brand{display:flex;align-items:center;gap:10px;}
 .brand-mark{width:30px;height:22px;flex-shrink:0;}
 .brand-text{display:flex;flex-direction:column;line-height:1.1;}
@@ -52,26 +66,43 @@ button{font-family:inherit;}
 .desk-status.tone-warn{border-color:rgba(245,183,0,.5);background:rgba(245,183,0,.14);color:var(--dock-yellow);}
 .desk-status.tone-done{border-color:rgba(31,138,95,.5);background:rgba(31,138,95,.18);color:#8FE0BB;}
 .identity-slot{flex:1;display:flex;justify-content:center;min-width:0;padding:0 16px;}
+.header-right{display:flex;align-items:center;gap:10px;}
 .identity-greeting{font-size:12px;color:rgba(255,255,255,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .identity-prompt{display:flex;align-items:center;gap:6px;}
 .identity-input{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:var(--r-full);padding:5px 12px;font-size:11.5px;color:#fff;width:150px;font-family:var(--font-body);}
 .identity-input::placeholder{color:rgba(255,255,255,.4);}
 .identity-input:focus{outline:none;border-color:var(--dock-yellow);}
 .identity-submit{width:24px;height:24px;border-radius:var(--r-full);border:none;background:var(--dock-yellow);color:var(--dock-yellow-ink);font-weight:700;font-size:11px;cursor:pointer;flex-shrink:0;}
+.theme-toggle{width:30px;height:30px;border-radius:var(--r-full);border:1px solid rgba(255,255,255,.16);background:transparent;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background var(--t-fast);}
+.theme-toggle:hover{background:rgba(255,255,255,.08);}
+.theme-toggle svg{width:15px;height:15px;}
+
+/* ── PROGRESS ROW ─────────────────────────────── */
+.progress-row{max-width:920px;margin:0 auto;padding:18px 20px 0;display:flex;gap:18px;flex-wrap:wrap;}
+.progress-item{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:var(--ink-300);}
+.progress-item svg{width:14px;height:14px;flex-shrink:0;}
+.progress-item.is-done{color:var(--cert-600);}
+.progress-item.is-error{color:var(--rust-600);}
 
 /* ── MAIN ───────────────────────────────── */
 .desk-main{max-width:920px;margin:0 auto;padding:32px 20px 100px;}
 
 /* ── INTAKE CARDS ───────────────────────── */
 .intake-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
-.intake-card{background:var(--card-0);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-card);padding:20px;display:flex;flex-direction:column;gap:12px;}
+.intake-card{background:var(--card-0);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-card);padding:20px;display:flex;flex-direction:column;gap:12px;animation:cardIn 220ms cubic-bezier(.4,0,.2,1) both;transition:background var(--t-base),border-color var(--t-base);}
+.intake-card:nth-child(2){animation-delay:40ms;}
+@keyframes cardIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.fade-slide-in{animation:fadeSlideIn 160ms ease-out both;}
 .card-eyebrow{font-family:var(--font-display);font-size:11.5px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-500);}
 
 /* PDF dropzone */
 .pdf-dropzone{border:2px dashed var(--line);border-radius:var(--r-md);padding:26px 16px;text-align:center;cursor:pointer;transition:all var(--t-base);background:var(--paper-50);}
-.pdf-dropzone:hover,.pdf-dropzone.drag-over{border-color:var(--route-600);background:var(--route-100);}
+.pdf-dropzone:hover,.pdf-dropzone.drag-over{border-color:var(--route-600);background:var(--route-100);transform:translateY(-1px);}
+.pdf-dropzone:active{transform:scale(.995);}
 .dz-empty{display:flex;flex-direction:column;align-items:center;gap:8px;}
 .dz-ring{width:42px;height:42px;border-radius:var(--r-full);background:var(--card-0);border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:17px;}
+.dz-ring svg{width:20px;height:20px;color:var(--ink-500);}
 .dz-title{font-size:13px;font-weight:600;color:var(--ink-700);}
 .dz-sub{font-size:11.5px;color:var(--ink-300);}
 .pdf-dropzone.has-file{cursor:default;background:var(--card-0);border-style:solid;border-color:var(--cert-600);text-align:left;padding:14px 16px;}
@@ -79,6 +110,7 @@ button{font-family:inherit;}
 .pdf-dropzone.has-file .dz-empty{display:none;}
 .pdf-dropzone.has-file .dz-loaded{display:flex;}
 .dz-loaded-icon{width:36px;height:36px;border-radius:var(--r-sm);background:var(--cert-100);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.dz-loaded-icon svg{width:18px;height:18px;color:var(--cert-600);}
 .dz-loaded-info{flex:1;min-width:0;}
 .dz-loaded-name{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--ink-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .dz-loaded-pages{font-size:11px;color:var(--ink-500);margin-top:1px;}
@@ -86,6 +118,7 @@ button{font-family:inherit;}
 .dz-change-btn:hover{background:var(--route-100);}
 
 .tools-toggle{display:none;align-items:center;gap:6px;align-self:flex-start;background:none;border:1px solid var(--line);border-radius:var(--r-full);padding:6px 12px;font-size:11.5px;font-weight:600;color:var(--ink-500);cursor:pointer;transition:all var(--t-fast);}
+.tools-toggle svg{width:13px;height:13px;}
 .tools-toggle.show{display:inline-flex;}
 .tools-toggle:hover{border-color:var(--ink-300);color:var(--ink-700);background:var(--paper-50);}
 .tools-toggle.has-warning{border-color:var(--dock-yellow);color:var(--dock-yellow-ink);background:#FFF6DC;}
@@ -95,7 +128,8 @@ button{font-family:inherit;}
 .data-paste:focus{outline:none;border-color:var(--route-600);background:var(--card-0);box-shadow:0 0 0 3px var(--route-100);}
 .data-paste::placeholder{color:var(--ink-300);font-family:var(--font-body);}
 .data-chips{display:flex;flex-wrap:wrap;gap:6px;min-height:22px;}
-.chip{font-family:var(--font-mono);font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:var(--r-full);border:1px solid transparent;}
+.chip{font-family:var(--font-mono);font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:var(--r-full);border:1px solid transparent;animation:chipIn 160ms cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes chipIn{0%{opacity:0;transform:scale(.85);}100%{opacity:1;transform:scale(1);}}
 .chip-route{background:var(--route-100);color:var(--route-700);border-color:#C7D5F8;}
 .chip-fito{background:var(--cert-100);color:var(--cert-600);border-color:#C3E8D5;}
 .chip-uni{background:#F1E9FB;color:#6B3FA0;border-color:#DFC9F2;}
@@ -117,7 +151,8 @@ button{font-family:inherit;}
 .tools-drawer[hidden]{display:none;}
 .drawer-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--paper-50);}
 .drawer-title{font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-700);}
-.drawer-close{width:26px;height:26px;border-radius:var(--r-full);border:1px solid var(--line);background:var(--card-0);color:var(--ink-500);cursor:pointer;font-size:12px;}
+.drawer-close{width:26px;height:26px;border-radius:var(--r-full);border:1px solid var(--line);background:var(--card-0);color:var(--ink-500);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
+.drawer-close svg{width:12px;height:12px;}
 .drawer-close:hover{background:var(--paper-50);color:var(--ink-900);}
 .drawer-body{padding:18px 20px;}
 
@@ -143,8 +178,10 @@ button{font-family:inherit;}
 .rot-label{font-size:11px;font-weight:600;color:var(--ink-500);min-width:120px;}
 .rot-btns{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .rot-btn{width:32px;height:32px;border-radius:var(--r-sm);background:var(--paper-50);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all var(--t-fast);color:var(--ink-500);}
+.rot-btn svg{width:15px;height:15px;}
 .rot-btn:hover{background:var(--route-100);border-color:#C7D5F8;color:var(--route-600);}
-.rot-btn-reset{font-size:10px;font-weight:700;width:auto;padding:0 10px;}
+.rot-btn-reset{font-size:10px;font-weight:700;width:auto;padding:0 10px;display:inline-flex;align-items:center;gap:4px;}
+.rot-btn-reset svg{width:10px;height:10px;}
 .page-select{appearance:none;background:var(--card-0);border:1px solid var(--line);border-radius:var(--r-sm);padding:6px 26px 6px 10px;font-size:11.5px;font-family:var(--font-mono);color:var(--ink-700);cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239A9DA8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;min-width:112px;}
 
 .thumb-strip-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--ink-300);margin-bottom:8px;}
@@ -158,7 +195,8 @@ button{font-family:inherit;}
 .thumb-item.has-warn .thumb-canvas-wrap{border-color:var(--dock-yellow);}
 .thumb-item.has-correction .thumb-canvas-wrap{border-color:var(--route-600);}
 .thumb-canvas-wrap canvas{max-width:100%;max-height:100%;display:block;}
-.thumb-badge{position:absolute;top:3px;right:3px;background:var(--dock-yellow);color:var(--dock-yellow-ink);font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;}
+.thumb-badge{position:absolute;top:3px;right:3px;background:var(--dock-yellow);color:var(--dock-yellow-ink);font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;display:flex;align-items:center;justify-content:center;}
+.thumb-badge svg{width:9px;height:9px;}
 .thumb-badge.correction{background:var(--route-600);color:#fff;}
 .thumb-num{font-size:9px;font-weight:600;color:var(--ink-300);font-family:var(--font-mono);}
 .thumb-loading{display:flex;align-items:center;justify-content:center;width:64px;height:86px;background:var(--paper-50);}
@@ -172,6 +210,7 @@ button{font-family:inherit;}
 .manifest-status.tone-warn{border-color:#F5DE8F;background:#FFF6DC;}
 .manifest-status.tone-error{border-color:#F3C6AE;background:var(--rust-100);}
 .status-icon{font-size:15px;flex-shrink:0;}
+.status-icon svg{width:17px;height:17px;}
 .status-line{flex:1;font-size:12.5px;color:var(--ink-700);line-height:1.5;}
 .status-line strong{font-weight:700;}
 .detail-toggle{font-size:11px;font-weight:600;color:var(--route-600);background:none;border:none;cursor:pointer;white-space:nowrap;padding:4px 8px;border-radius:var(--r-sm);}
@@ -181,7 +220,7 @@ button{font-family:inherit;}
 .detail-table[hidden]{display:none;}
 .table-scroll{border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;max-height:280px;overflow-y:auto;background:var(--card-0);}
 table{width:100%;border-collapse:collapse;font-size:11.5px;}
-thead th{position:sticky;top:0;background:var(--ink-900);font-family:var(--font-mono);font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.55);text-align:left;padding:9px 14px;}
+thead th{position:sticky;top:0;background:var(--header-bg);font-family:var(--font-mono);font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.55);text-align:left;padding:9px 14px;}
 tbody tr{border-bottom:1px solid var(--line);}
 tbody tr:last-child{border-bottom:none;}
 tbody td{padding:8px 14px;vertical-align:middle;font-family:var(--font-mono);font-size:11px;}
@@ -196,10 +235,11 @@ tbody td{padding:8px 14px;vertical-align:middle;font-family:var(--font-mono);fon
 
 /* ── ACTION ─────────────────────────────── */
 .action-zone{max-width:920px;margin:24px auto 0;display:flex;flex-direction:column;align-items:center;gap:12px;}
-.cta-stamp-btn{font-family:var(--font-display);font-size:15px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-900);background:var(--dock-yellow);border:none;border-radius:var(--r-md);padding:16px 40px;cursor:pointer;transition:all var(--t-fast);box-shadow:0 4px 0 #C99400,0 8px 20px -6px rgba(245,183,0,.5);}
-.cta-stamp-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 5px 0 #C99400,0 10px 24px -6px rgba(245,183,0,.6);}
-.cta-stamp-btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px 0 #C99400;}
-.cta-stamp-btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;}
+.cta-stamp-btn{display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-size:15px;font-weight:600;letter-spacing:.2px;color:#fff;background:var(--route-600);border:none;border-radius:var(--r-md);padding:16px 40px;cursor:pointer;transition:all var(--t-fast);box-shadow:0 1px 2px rgba(16,24,40,.08),0 8px 20px -8px rgba(11,60,140,.45);}
+.cta-stamp-btn svg{width:18px;height:18px;}
+.cta-stamp-btn:hover:not(:disabled){background:var(--route-700);transform:translateY(-1px);box-shadow:0 2px 4px rgba(16,24,40,.1),0 10px 24px -8px rgba(11,60,140,.55);}
+.cta-stamp-btn:active:not(:disabled){transform:scale(.97);}
+.cta-stamp-btn:disabled{background:var(--ink-100);color:var(--card-0);opacity:.85;cursor:not-allowed;box-shadow:none;}
 .action-progress{width:100%;max-width:340px;display:none;flex-direction:column;gap:6px;}
 .action-progress.show{display:flex;}
 .ap-label{font-size:11.5px;font-weight:600;color:var(--ink-500);display:flex;justify-content:space-between;font-family:var(--font-mono);}
@@ -236,11 +276,12 @@ tbody td{padding:8px 14px;vertical-align:middle;font-family:var(--font-mono);fon
 
 /* ── TOAST ──────────────────────────────── */
 #toast-container{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:9999;}
-.toast{display:flex;align-items:flex-start;gap:10px;background:var(--ink-900);border-radius:var(--r-md);padding:12px 14px;min-width:250px;max-width:320px;box-shadow:var(--shadow-pop);animation:toastIn 200ms cubic-bezier(.4,0,.2,1) forwards;cursor:pointer;}
+.toast{display:flex;align-items:flex-start;gap:10px;background:var(--header-bg);border-radius:var(--r-md);padding:12px 14px;min-width:250px;max-width:320px;box-shadow:var(--shadow-pop);animation:toastIn 200ms cubic-bezier(.4,0,.2,1) forwards;cursor:pointer;}
 @keyframes toastIn{from{opacity:0;transform:translateX(16px);}to{opacity:1;transform:translateX(0);}}
 @keyframes toastOut{to{opacity:0;transform:translateX(16px);}}
 .toast.hiding{animation:toastOut 180ms ease forwards;}
 .toast-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.toast-icon svg{width:16px;height:16px;}
 .toast-body{flex:1;}
 .toast-msg{font-size:12px;font-weight:600;color:#fff;line-height:1.4;}
 .toast-sub{font-size:10.5px;color:rgba(255,255,255,.5);margin-top:1px;}
@@ -280,10 +321,26 @@ tbody td{padding:8px 14px;vertical-align:middle;font-family:var(--font-mono);fon
     </div>
   </div>
   <div class="identity-slot" id="identity-slot"></div>
-  <div class="desk-status tone-idle" id="desk-status">Sin PDF cargado</div>
+  <div class="header-right">
+    <div class="desk-status tone-idle" id="desk-status">Sin PDF cargado</div>
+    <button class="theme-toggle" id="theme-toggle" type="button" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro">
+      <span id="theme-toggle-icon"></span>
+    </button>
+  </div>
 </header>
 
 <main class="desk-main">
+
+  <div class="progress-row" id="progress-row">
+    <span class="progress-item" id="progress-pdf">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+      PDF pendiente
+    </span>
+    <span class="progress-item" id="progress-data">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+      Datos pendientes
+    </span>
+  </div>
 
   <div class="intake-grid">
 
@@ -293,12 +350,12 @@ tbody td{padding:8px 14px;vertical-align:middle;font-family:var(--font-mono);fon
       <div class="pdf-dropzone" id="drop-zone">
         <input type="file" id="file-input" accept="application/pdf" hidden>
         <div class="dz-empty">
-          <div class="dz-ring">📂</div>
+          <div class="dz-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.9A5 5 0 0 1 6 5.3 6 6 0 0 1 17.7 7 4.5 4.5 0 0 1 17 16"/><path d="M12 12v8M9 16l3-3 3 3"/></svg></div>
           <div class="dz-title">Arrastra o haz clic para cargar</div>
           <div class="dz-sub">Un solo archivo .pdf</div>
         </div>
         <div class="dz-loaded">
-          <div class="dz-loaded-icon">📄</div>
+          <div class="dz-loaded-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
           <div class="dz-loaded-info">
             <div class="dz-loaded-name" id="dz-loaded-name">—</div>
             <div class="dz-loaded-pages" id="dz-loaded-pages"></div>
@@ -306,7 +363,7 @@ tbody td{padding:8px 14px;vertical-align:middle;font-family:var(--font-mono);fon
           <button class="dz-change-btn" id="dz-change-btn" type="button">Cambiar</button>
         </div>
       </div>
-      <button class="tools-toggle" id="tools-toggle" type="button">⚙ Herramientas de corrección</button>
+      <button class="tools-toggle" id="tools-toggle" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z"/></svg> Herramientas de corrección</button>
     </section>
 
     <!-- DATA CARD -->
@@ -336,7 +393,7 @@ tbody td{padding:8px 14px;vertical-align:middle;font-family:var(--font-mono);fon
   <section class="tools-drawer" id="tools-drawer" hidden>
     <div class="drawer-header">
       <span class="drawer-title">Herramientas de corrección</span>
-      <button class="drawer-close" id="drawer-close" type="button">✕</button>
+      <button class="drawer-close" id="drawer-close" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="drawer-body">
       <div class="orient-banner" id="orient-banner">
@@ -352,10 +409,10 @@ tbody td{padding:8px 14px;vertical-align:middle;font-family:var(--font-mono);fon
         <div class="rot-row">
           <div class="rot-label">Rotar todo el PDF</div>
           <div class="rot-btns">
-            <button class="rot-btn" title="90° izquierda" data-rotate-all="-90">↺</button>
-            <button class="rot-btn" title="180°" data-rotate-all="180">↕</button>
-            <button class="rot-btn" title="90° derecha" data-rotate-all="90">↻</button>
-            <button class="rot-btn rot-btn-reset" id="rot-all-reset">✕ Todo</button>
+            <button class="rot-btn" title="90° izquierda" data-rotate-all="-90"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v5h5"/></svg></button>
+            <button class="rot-btn" title="180°" data-rotate-all="180"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3l4 4 4-4M8 21l4-4 4 4M12 7v10"/></svg></button>
+            <button class="rot-btn" title="90° derecha" data-rotate-all="90"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v5h-5"/></svg></button>
+            <button class="rot-btn rot-btn-reset" id="rot-all-reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg> Todo</button>
           </div>
         </div>
         <div class="rot-row">
@@ -364,10 +421,10 @@ tbody td{padding:8px 14px;vertical-align:middle;font-family:var(--font-mono);fon
             <select class="page-select" id="page-select">
               <option value="">— página —</option>
             </select>
-            <button class="rot-btn" title="90° izquierda" data-rotate-page="-90">↺</button>
-            <button class="rot-btn" title="180°" data-rotate-page="180">↕</button>
-            <button class="rot-btn" title="90° derecha" data-rotate-page="90">↻</button>
-            <button class="rot-btn rot-btn-reset" id="rot-page-reset">✕ Pág.</button>
+            <button class="rot-btn" title="90° izquierda" data-rotate-page="-90"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v5h5"/></svg></button>
+            <button class="rot-btn" title="180°" data-rotate-page="180"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3l4 4 4-4M8 21l4-4 4 4M12 7v10"/></svg></button>
+            <button class="rot-btn" title="90° derecha" data-rotate-page="90"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v5h-5"/></svg></button>
+            <button class="rot-btn rot-btn-reset" id="rot-page-reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg> Pág.</button>
           </div>
         </div>
       </div>
@@ -397,7 +454,7 @@ tbody td{padding:8px 14px;vertical-align:middle;font-family:var(--font-mono);fon
 
   <!-- ACTION -->
   <div class="action-zone">
-    <button class="cta-stamp-btn" id="dispatch-btn" disabled>Dividir y descargar ZIP</button>
+    <button class="cta-stamp-btn" id="dispatch-btn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg> Dividir y descargar ZIP</button>
     <div class="action-progress" id="action-progress">
       <div class="ap-label"><span id="ap-label-text">Procesando...</span><span id="ap-pct">0%</span></div>
       <div class="ap-track"><div class="ap-fill" id="ap-fill"></div></div>

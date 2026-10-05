@@ -37,6 +37,10 @@ import {
 } from './ui/thumbnails.js';
 import { renderChips, renderManifestStatus, renderDetailTable, updateDispatchButton } from './ui/manifest.js';
 import { renderResults, hideResults } from './ui/results.js';
+import { renderProgress } from './ui/progress.js';
+import { initTheme } from './ui/theme.js';
+
+initTheme();
 
 // ══════════════════════════════════════════
 //  STATE (estado de sesión — no de UI)
@@ -260,6 +264,7 @@ function refresh() {
 
   const canDispatch = !!pdfFile && assignments.length > 0;
   updateDispatchButton(canDispatch);
+  renderProgress(!!pdfFile, total > 0);
 
   if (canDispatch) {
     setDeskStatus('Listo para dividir', 'ready');
@@ -320,7 +325,7 @@ async function dispatchAndDownload() {
 
   renderResults(generatedFiles, Object.keys(pageRotations).length);
   setDeskStatus(`${generatedFiles.length} archivos generados`, 'done');
-  toast(`✅ ${generatedFiles.length} archivos generados y ZIP descargado`, 'success');
+  toast(`${generatedFiles.length} archivos generados y ZIP descargado`, 'success');
 
   refresh(); // recalcula el estado real del botón (por si se vuelve a dividir)
 }
@@ -372,6 +377,7 @@ function resetApp() {
 
   hideResults();
   updateDispatchButton(false);
+  renderProgress(false, false);
   setDeskStatus('Sin PDF cargado', 'idle');
 }
 
@@ -428,3 +434,18 @@ document.getElementById('detail-toggle').addEventListener('click', () => {
 document.getElementById('dispatch-btn').addEventListener('click', dispatchAndDownload);
 document.getElementById('zip-btn').addEventListener('click', downloadZipAgain);
 document.getElementById('reset-btn').addEventListener('click', resetApp);
+
+// Entrada suave (fade+slide) al abrir "Configuración manual" — puramente
+// cosmético, no afecta el valor ni el wiring de los textareas. Cerrar se
+// queda instantáneo a propósito (animar el cierre de <details> nativo
+// pide interceptar el evento, no vale la pena para este detalle).
+document.querySelectorAll('.manual-fallback').forEach((acc) => {
+  acc.addEventListener('toggle', () => {
+    if (!acc.open) return;
+    const body = acc.querySelector('.manual-grid');
+    if (!body) return;
+    body.classList.remove('fade-slide-in');
+    void body.offsetWidth; // fuerza reflow para poder reiniciar la animación
+    body.classList.add('fade-slide-in');
+  });
+});

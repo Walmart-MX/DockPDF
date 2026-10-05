@@ -44,6 +44,8 @@
   --font-ui:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
   --font-mono:'IBM Plex Mono',ui-monospace,monospace;
 
+  --texture-dot:rgba(16,24,40,.06);
+
   --t-fast:120ms ease;--t-base:180ms cubic-bezier(.4,0,.2,1);
 }
 
@@ -79,11 +81,12 @@
 
   --shadow-card:0 1px 2px rgba(0,0,0,.3),0 6px 18px -8px rgba(0,0,0,.5);
   --focus-ring:0 0 0 3px rgba(76,134,240,.35);
+  --texture-dot:rgba(234,240,251,.05);
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:15px;-webkit-font-smoothing:antialiased;}
-body{font-family:var(--font-ui);background:var(--color-bg);color:var(--color-text);min-height:100vh;line-height:1.5;transition:background var(--t-base),color var(--t-base);}
+body{font-family:var(--font-ui);background-color:var(--color-bg);background-image:radial-gradient(circle,var(--texture-dot) 1px,transparent 1px);background-size:22px 22px;color:var(--color-text);min-height:100vh;line-height:1.5;transition:background-color var(--t-base),color var(--t-base);}
 button,input,textarea{font-family:inherit;}
 :focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:4px;}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important;}}
@@ -134,7 +137,8 @@ svg{display:block;}
 .step-label{font-size:11.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--color-text-secondary);}
 
 .dropzone{border:1.5px dashed var(--color-border-strong);border-radius:var(--radius-md);padding:30px 16px;text-align:center;cursor:pointer;transition:all var(--t-base);background:var(--color-surface-sunken);}
-.dropzone:hover{border-color:var(--color-primary);background:var(--color-primary-wash);}
+.dropzone:hover{border-color:var(--color-primary);background:var(--color-primary-wash);transform:translateY(-1px);}
+.dropzone:active{transform:scale(.99);}
 .dropzone.is-dragover{border-color:var(--color-primary);background:var(--color-primary-wash);border-style:solid;}
 .dropzone.has-error{border-color:var(--color-danger);background:var(--color-danger-wash);}
 .dz-empty{display:flex;flex-direction:column;align-items:center;gap:10px;}
@@ -182,8 +186,8 @@ svg{display:block;}
 
 .action-zone{margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:10px;}
 .btn-primary{display:inline-flex;align-items:center;gap:9px;font-size:14px;font-weight:600;color:var(--color-primary-contrast);background:var(--color-primary);border:none;border-radius:var(--radius-md);padding:14px 28px;cursor:pointer;transition:all var(--t-fast);width:100%;max-width:360px;justify-content:center;}
-.btn-primary:hover:not(:disabled){background:var(--color-primary-hover);}
-.btn-primary:active:not(:disabled){background:var(--color-primary-active);}
+.btn-primary:hover:not(:disabled){background:var(--color-primary-hover);transform:translateY(-1px);}
+.btn-primary:active:not(:disabled){background:var(--color-primary-active);transform:scale(.97);}
 .btn-primary:disabled{background:var(--color-border-strong);color:var(--color-surface);cursor:not-allowed;opacity:.75;}
 .btn-primary.is-loading{pointer-events:none;}
 .spin{animation:spin .8s linear infinite;}
@@ -197,6 +201,24 @@ svg{display:block;}
 .status-badge.tone-error{color:var(--color-danger);}
 
 .section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-tertiary);margin:34px 0 10px;}
+
+/* ── MOTION ── micro-interacciones cortas, solo transform/opacity ── */
+@keyframes cardIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.step-card{animation:cardIn 220ms cubic-bezier(.4,0,.2,1) both;}
+.step-card:nth-child(2){animation-delay:40ms;}
+
+@keyframes popIn{0%{opacity:0;transform:scale(.85);}100%{opacity:1;transform:scale(1);}}
+.pop-in{animation:popIn 200ms cubic-bezier(.34,1.56,.64,1) both;}
+
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.fade-slide-in{animation:fadeSlideIn 160ms ease-out both;}
+
+@keyframes shakeX{10%,90%{transform:translateX(-1px);}20%,80%{transform:translateX(2px);}30%,50%,70%{transform:translateX(-3px);}40%,60%{transform:translateX(3px);}}
+.shake{animation:shakeX 300ms cubic-bezier(.36,.07,.19,.97) both;}
+
+.chip{animation:popIn 160ms cubic-bezier(.34,1.56,.64,1) both;}
+.chip:nth-child(2){animation-delay:30ms;}
+.chip:nth-child(3){animation-delay:60ms;}
 
 @media(max-width:760px){
   .step-grid{grid-template-columns:1fr;}
@@ -353,6 +375,19 @@ themeToggle.addEventListener('click', () => {
   html.dataset.theme = next;
 });
 
+// Acordeon: fade-slide-in al abrir (al cerrar se queda instantaneo a
+// proposito — animar el cierre de un <details> nativo requiere interceptar
+// el evento y es mas codigo del que vale la pena para este detalle).
+document.querySelectorAll('.accordion').forEach((acc) => {
+  acc.addEventListener('toggle', () => {
+    if (!acc.open) return;
+    const body = acc.querySelector('.accordion-body');
+    body.classList.remove('fade-slide-in');
+    void body.offsetWidth; // fuerza reflow para poder reiniciar la animacion
+    body.classList.add('fade-slide-in');
+  });
+});
+
 const dzEmpty = document.getElementById('dzEmpty');
 const dzLoaded = document.getElementById('dzLoaded');
 const dropzone = document.getElementById('dropzone');
@@ -369,8 +404,12 @@ document.getElementById('toggleFile').addEventListener('click', () => {
   const loaded = dzLoaded.style.display !== 'none';
   dzLoaded.style.display = loaded ? 'none' : 'flex';
   dzEmpty.style.display = loaded ? 'flex' : 'none';
+  if (!loaded) {
+    dzLoaded.querySelector('.dz-loaded-icon').classList.add('pop-in');
+  }
   progressPdf.className = 'progress-item' + (loaded ? '' : ' is-done');
   progressPdf.innerHTML = (loaded ? pendingIcon : okIcon) + (loaded ? ' PDF pendiente' : ' PDF listo');
+  progressPdf.querySelector('.icon').classList.add('pop-in');
   sessionStatus.className = 'session-status' + (loaded ? '' : ' is-ready');
   sessionStatusText.textContent = loaded ? 'Sin PDF cargado' : '18 páginas · listo';
   ctaBtn.disabled = loaded;
@@ -378,9 +417,16 @@ document.getElementById('toggleFile').addEventListener('click', () => {
 });
 
 document.getElementById('toggleError').addEventListener('click', () => {
+  const turningOn = !dropzone.classList.contains('has-error');
   dropzone.classList.toggle('has-error');
   document.getElementById('dzErrorMsg').style.display =
     dropzone.classList.contains('has-error') ? 'flex' : 'none';
+  if (turningOn) {
+    dropzone.classList.remove('shake');
+    void dropzone.offsetWidth;
+    dropzone.classList.add('shake');
+    document.getElementById('dzErrorMsg').classList.add('fade-slide-in');
+  }
 });
 
 document.getElementById('toggleLoading').addEventListener('click', () => {

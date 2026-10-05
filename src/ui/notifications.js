@@ -11,6 +11,8 @@
  *   - saber nada de PDFs, rutas ni servicios — solo recibe strings.
  */
 
+import { iconCheckCircle, iconAlertCircle, iconAlertTriangle, iconInfo } from './icons.js';
+
 /**
  * @param {string} msg
  * @param {'success'|'error'|'warning'|'info'} [type='info']
@@ -18,10 +20,10 @@
  */
 export function toast(msg, type = 'info', sub = '') {
   const container = document.getElementById('toast-container');
-  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const icons = { success: iconCheckCircle(), error: iconAlertCircle(), warning: iconAlertTriangle(), info: iconInfo() };
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  el.innerHTML = `<div class="toast-icon">${icons[type] || 'ℹ️'}</div><div class="toast-body"><div class="toast-msg">${msg}</div>${sub ? `<div class="toast-sub">${sub}</div>` : ''}</div>`;
+  el.innerHTML = `<div class="toast-icon">${icons[type] || icons.info}</div><div class="toast-body"><div class="toast-msg">${msg}</div>${sub ? `<div class="toast-sub">${sub}</div>` : ''}</div>`;
   el.addEventListener('click', () => dismissToast(el));
   container.appendChild(el);
   setTimeout(() => dismissToast(el), 4000);

@@ -22,6 +22,8 @@
  *   - mostrar toasts.
  */
 
+import { iconAlertTriangle, iconCheck } from './icons.js';
+
 let selectedThumbPage = null; // 0-based index — estado exclusivo de UI
 
 /**
@@ -88,7 +90,7 @@ export function markThumbWarn(idx, on) {
   if (on && !badge) {
     badge = document.createElement('div');
     badge.className = 'thumb-badge';
-    badge.textContent = '⚠';
+    badge.innerHTML = iconAlertTriangle();
     wrap.appendChild(badge);
   } else if (!on && badge) {
     badge.remove();
@@ -115,7 +117,7 @@ export function markThumbCorrection(idx, rotationAngle) {
     wrap.appendChild(badge);
   }
   badge.className = 'thumb-badge correction';
-  badge.textContent = rotationAngle ? `${rotationAngle}°` : '✓';
+  badge.innerHTML = rotationAngle ? `${rotationAngle}°` : iconCheck();
 }
 
 /**
