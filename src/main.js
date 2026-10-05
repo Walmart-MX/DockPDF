@@ -39,6 +39,7 @@ import { renderChips, renderManifestStatus, renderDetailTable, updateDispatchBut
 import { renderResults, hideResults } from './ui/results.js';
 import { renderProgress } from './ui/progress.js';
 import { initTheme } from './ui/theme.js';
+import { setOcrSectionVisible, runFitoOcrValidation } from './ui/fitoOcr.js';
 
 initTheme();
 
@@ -51,6 +52,7 @@ let pdfHandle = null;
 let pageRotations = {}; // { pageIndex: angleDelta }
 let warnPages = []; // [{ pageIndex, currentRot, suggestedDelta }]
 let generatedFiles = [];
+let currentFitoPages = []; // [{route, pageIndex}] — recalculado en cada refresh()
 
 // ══════════════════════════════════════════
 //  DOM REFS
@@ -266,6 +268,11 @@ function refresh() {
   updateDispatchButton(canDispatch);
   renderProgress(!!pdfFile, total > 0);
 
+  currentFitoPages = assignments
+    .map((a, idx) => ({ route: a.route, pageIndex: idx, type: a.type }))
+    .filter((a) => a.type === 'FITO');
+  setOcrSectionVisible(!!pdfFile && currentFitoPages.length > 0);
+
   if (canDispatch) {
     setDeskStatus('Listo para dividir', 'ready');
   } else if (pdfFile) {
@@ -378,6 +385,8 @@ function resetApp() {
   hideResults();
   updateDispatchButton(false);
   renderProgress(false, false);
+  currentFitoPages = [];
+  setOcrSectionVisible(false);
   setDeskStatus('Sin PDF cargado', 'idle');
 }
 
@@ -434,6 +443,7 @@ document.getElementById('detail-toggle').addEventListener('click', () => {
 document.getElementById('dispatch-btn').addEventListener('click', dispatchAndDownload);
 document.getElementById('zip-btn').addEventListener('click', downloadZipAgain);
 document.getElementById('reset-btn').addEventListener('click', resetApp);
+document.getElementById('ocr-validate-btn').addEventListener('click', () => runFitoOcrValidation(pdfHandle, currentFitoPages));
 
 // Entrada suave (fade+slide) al abrir "Configuración manual" — puramente
 // cosmético, no afecta el valor ni el wiring de los textareas. Cerrar se

@@ -3,10 +3,44 @@
 Herramienta de despacho: procesa PDFs escaneados de rutas, los empareja
 contra datos pegados desde Excel, corrige orientación de páginas, detecta
 rutas unificadas (mismo tractor, distinta caja) y genera un PDF por
-ruta/tipo (CP, FITO) con exportación en ZIP.
+ruta/tipo (CP, FITO) con exportación en ZIP. Incluye una validación
+opcional por OCR que avisa si una página marcada como FITO realmente
+parece contener un certificado fitosanitario (ver sección dedicada).
 
 Este documento cierra la Fase F de la modularización: cómo correr el
 proyecto ahora que `index.html` pasó de monolito a cascarón + módulos ES.
+
+---
+
+## Validación FITO por OCR (opcional)
+
+Cuando el Excel pegado marca una ruta como FITO, aparece una sección
+"Validación de certificados FITO (OCR)" con un botón **Validar con OCR**.
+Al presionarlo, la app:
+
+1. Renderiza en alta resolución la página que le corresponde a cada ruta
+   FITO (misma regla que usa `splitPdf` para dividir: la asignación FITO
+   siempre es la página inmediata después de la portada CP de esa ruta).
+2. Corre OCR en el navegador con Tesseract.js (nunca sale nada del
+   documento a ningún servidor — 100% local).
+3. Compara el texto reconocido contra una lista fija de frases que
+   siempre aparecen en un Certificado Fitosanitario oficial (SENASICA).
+4. Si encuentra al menos 60% de esas frases, lo marca como correcto; si
+   no, muestra una advertencia para que el operador revise manualmente.
+
+**Es una heurística de apoyo, no una validación oficial/legal.** Nunca
+bloquea "Dividir y descargar ZIP" — es puramente informativo.
+
+### Por qué hay un archivo de ~2.3MB en `assets/tessdata/`
+
+El paquete de idioma español de Tesseract (`spa.traineddata`) está
+bloqueado por el firewall corporativo tanto en el CDN oficial de
+Tesseract como en cdnjs — confirmado durante la evaluación de
+viabilidad. Por eso se descarga una sola vez y se sirve desde el propio
+proyecto en vez de depender de una red externa en cada uso. Si alguna
+vez se actualiza, se puede volver a bajar desde
+`https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/spa.traineddata`
+(ese dominio de GitHub sí es alcanzable).
 
 ---
 

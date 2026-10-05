@@ -142,5 +142,24 @@ export async function loadPdf(file) {
     destroy() {
       pdfDoc.destroy();
     },
+
+    /**
+     * Renderiza una página a resolución alta, pensada para OCR — NO para
+     * mostrarse en pantalla. Separado de renderThumbnail a propósito: esa
+     * función está afinada para miniaturas de 72px, insuficiente para que
+     * Tesseract reconozca texto con confianza razonable.
+     * @param {number} pageIndex
+     * @param {number} [scale=2.5]
+     * @returns {Promise<HTMLCanvasElement>}
+     */
+    async renderPageForOcr(pageIndex, scale = 2.5) {
+      const page = await pdfDoc.getPage(pageIndex + 1);
+      const vp = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.width = vp.width;
+      canvas.height = vp.height;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+      return canvas;
+    },
   };
 }
