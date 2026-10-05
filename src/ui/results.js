@@ -17,6 +17,7 @@
  */
 
 import { escapeHtml } from '../core/sanitize.js';
+import { iconFile } from './icons.js';
 
 /**
  * @typedef {Object} GeneratedFile
@@ -52,7 +53,7 @@ export function renderResults(files, rotatedPageCount) {
     div.className = `result-item ${rowClass}`;
     const safeFilename = escapeHtml(filename);
     div.innerHTML = `
-      <span class="result-icon">&#128196;</span>
+      <span class="result-icon">${iconFile()}</span>
       <div class="result-info">
         <div class="result-name">${safeFilename}</div>
         <div class="result-meta">${unified ? 'Unificada · ' : ''}${type}</div>
