@@ -22,6 +22,7 @@
  */
 
 import { normalizeAngle } from '../core/angle.js';
+import { escapeHtml } from '../core/sanitize.js';
 
 /**
  * @param {{cpCount:number, fitoCount:number, uniCount:number}} stats
@@ -104,7 +105,7 @@ export function renderDetailTable(rows, totalPages, pageRotations) {
     html += `<tr>
       <td class="td-num">${pageNum}</td>
       <td class="td-page">${inRange ? `Pág.&nbsp;${pageNum}` : '—'}</td>
-      <td>${filename}</td>
+      <td>${escapeHtml(filename)}</td>
       <td><span class="row-tag tag-${typeClass}">${tagLabel}</span>${rotBadge}${!inRange ? ' <span class="row-tag tag-warn">sin pág.</span>' : ''}</td>
     </tr>`;
   });

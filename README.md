@@ -94,16 +94,18 @@ los servicios.
 
 ---
 
-## Deuda técnica conocida (no resuelta en esta fase, a propósito)
+## Deuda técnica conocida
 
 | Ítem | Estado |
 |---|---|
-| `pdfjs-dist` en la versión CDN tiene un CVE conocido (`GHSA-wgrm-67xf-hhpq`, RCE vía PDF malicioso) | Pendiente de tu aprobación — la actualización rompe la API en varios puntos. |
-| `innerHTML` con nombres de ruta/archivo sin escapar (en `ui/preview.js` y `ui/downloads.js`) | Riesgo de XSS si alguien pega datos maliciosos en el Excel. Ya identificado, no corregido — cambiar esto altera comportamiento (habría que decidir qué caracteres se escapan) y no era parte del alcance de "modularizar sin romper". |
-| Sin `app/state.js` centralizado con mutadores nombrados | `main.js` sigue usando variables `let` sueltas para el estado de sesión (`pdfFile`, `pageRotations`, etc.), tal como estaba. Es la recomendación pendiente del diagnóstico original para un futuro rediseño, no bloqueante ahora. |
-| `revokeGeneratedUrls`/`revokeUrl` (liberación de ObjectURLs entre splits sucesivos) | Implementadas y disponibles en los servicios, pero no activadas — el original tampoco liberaba esas URLs. |
+| `pdfjs-dist` en la versión CDN tenía un CVE conocido (`GHSA-wgrm-67xf-hhpq` / CVE-2024-4367, RCE vía PDF malicioso) | **Resuelto** — actualizado de 3.11.174 a 4.2.67 (versión donde Mozilla corrigió el uso de `eval`). cdnjs ya no publica build UMD/global para esa versión, así que `pdf.js` se carga ahora como import ES directo dentro de `pdfReadService.js` en vez de `<script src>` global en `index.html`. |
+| `innerHTML` con nombres de ruta/archivo sin escapar (en `ui/manifest.js` y `ui/results.js`) | **Resuelto** — se agregó `core/sanitize.js` (`escapeHtml`) y se aplicó a los dos puntos donde un nombre de archivo derivado de datos pegados por el usuario llegaba sin escapar a `innerHTML`/atributos HTML. |
+| Sin SRI (Subresource Integrity) en los `<script>` de CDN | **Parcial** — `pdf-lib` y `jszip` ya tienen `integrity` + `crossorigin`. `pdf.js` no puede llevar SRI porque se importa como módulo ES dinámico (los navegadores aún no soportan `integrity` en imports ESM remotos); se mitiga fijando versión exacta + URL completa. |
+| Sin `app/state.js` centralizado con mutadores nombrados | `main.js` sigue usando variables `let` sueltas para el estado de sesión (`pdfFile`, `pageRotations`, etc.). Recomendación pendiente para un futuro rediseño, no bloqueante ahora. |
+| `revokeGeneratedUrls`/`revokeUrl` (liberación de ObjectURLs entre splits sucesivos) | No implementadas — el original tampoco liberaba esas URLs. |
 | Sin tests automatizados | Los módulos de `domain/` y `parser/` son funciones puras — listos para testear cuando se decida agregar un framework de pruebas, pero no hay ninguno configurado todavía. |
-| Sin SRI (Subresource Integrity) en los `<script>` de CDN | Mismo riesgo que tenía la v1.0, no se tocó. |
+
+> **Importante:** el bump de `pdf.js` 3.11.174 → 4.2.67 es un upgrade de versión mayor con cambio de distribución (UMD → ESM). Las APIs usadas por este proyecto (`getDocument`, `GlobalWorkerOptions.workerSrc`, `numPages`, `getPage`, `getViewport`, `page.rotate`, `page.render`) se mantuvieron estables entre 3.x y 4.x, pero **corre el checklist manual de la Fase G de abajo con un PDF real antes de dar esto por cerrado** — especialmente la carga de PDF, miniaturas, detección/corrección de orientación y la división final.
 
 ---
 

@@ -8,11 +8,19 @@
  *   renderizado de miniaturas.
  *
  * Dependencias:
- *   - pdfjsLib: variable global expuesta por el <script> de pdf.js cargado
- *     vía CDN en index.html (sin bundler todavía — mismo mecanismo que ya
- *     usa el proyecto). Este módulo es el ÚNICO lugar del código que debe
+ *   - pdfjsLib: importado como módulo ES directamente desde cdnjs (ver
+ *     import de abajo). Este módulo es el ÚNICO lugar del código que debe
  *     tocar `pdfjsLib` directamente.
  *   - domain/orientation.js (cálculo puro, sin pdf.js)
+ *
+ * Nota de seguridad (2024-10):
+ *   Versión fijada en 4.2.67 — corrige CVE-2024-4367 / GHSA-wgrm-67xf-hhpq
+ *   (ejecución de JS arbitrario vía PDF malicioso con isEvalSupported:true).
+ *   Versiones <= 4.1.392 son vulnerables, NO usar. A partir de 4.2.67 cdnjs
+ *   solo publica build ESM (.mjs), ya no hay UMD global — por eso dejamos
+ *   de cargar pdf.js con <script src> en index.html y lo importamos aquí
+ *   como módulo. El worker también usa el build .mjs, pdf.js lo maneja
+ *   internamente como module worker sin configuración adicional.
  *
  * Quién puede llamarlo:
  *   - el script principal de index.html (loadFile, analyzeOrientation, etc.)
@@ -32,15 +40,16 @@
  *   patrón que existía en index.html v1.0 — se preserva tal cual, es la
  *   parte más frágil de esta extracción.
  *
- * Requiere que el <script> de pdf.js (CDN) se haya cargado ANTES de que
- * este módulo se importe — en index.html eso ya ocurre porque los scripts
- * de librerías están en <head>, antes del <script type="module"> principal.
+ * pdf.js ya no depende de orden de carga de <script> en <head> — se
+ * importa como módulo ES en la línea de abajo, el propio navegador
+ * resuelve y cachea la dependencia.
  */
 
+import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.mjs';
 import { analyzeOrientation as domainAnalyzeOrientation } from '../domain/orientation.js';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.mjs';
 
 /**
  * Carga un PDF y devuelve un "handle" con métodos de lectura.

@@ -16,6 +16,8 @@
  *     al iniciar un nuevo split o al resetear)
  */
 
+import { escapeHtml } from '../core/sanitize.js';
+
 /**
  * @typedef {Object} GeneratedFile
  * @property {string} filename
@@ -48,13 +50,14 @@ export function renderResults(files, rotatedPageCount) {
     const rowClass = unified ? 'rt-unified' : `rt-${type.toLowerCase()}`;
     const div = document.createElement('div');
     div.className = `result-item ${rowClass}`;
+    const safeFilename = escapeHtml(filename);
     div.innerHTML = `
-      <span class="result-icon">📄</span>
+      <span class="result-icon">&#128196;</span>
       <div class="result-info">
-        <div class="result-name">${filename}</div>
+        <div class="result-name">${safeFilename}</div>
         <div class="result-meta">${unified ? 'Unificada · ' : ''}${type}</div>
       </div>
-      <a class="result-dl" href="${url}" download="${filename}">↓</a>`;
+      <a class="result-dl" href="${url}" download="${safeFilename}">↓</a>`;
     grid.appendChild(div);
   });
 
